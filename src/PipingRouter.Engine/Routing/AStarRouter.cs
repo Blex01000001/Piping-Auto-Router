@@ -50,8 +50,13 @@ public sealed class AStarRouter : IRouter
     public RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config) =>
         Route(grid, line, config, RouteConstraints.None);
 
-    public RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config, RouteConstraints constraints)
+    public RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config, RouteConstraints constraints) =>
+        RouteCore(grid, line, config, constraints, allowDiagnosis: true);
+
+    private RouteResult RouteCore(VoxelGrid grid, LineRequest line, RoutingConfig config, RouteConstraints constraints,
+        bool allowDiagnosis)
     {
+        bool anyArrival = !constraints.EnforceArrivalDirection;
         long seed = config.Search.Seed;
         int minRun = constraints.MinStraightCells(grid.CellSize);
         var info0 = new RouteSearchInfo(0, seed, grid.CellSize, minRun);
@@ -119,7 +124,8 @@ public sealed class AStarRouter : IRouter
 
             if (expanded >= config.Search.MaxExpandedNodes)
                 return Fail("SearchLimitExceeded",
-                    $"已展開 {expanded} 個狀態仍未找到路徑，達到搜尋上限 {config.Search.MaxExpandedNodes}。",
+                    $"已展開 {expanded} 個狀態仍未找到路徑，達到搜尋上限 {config.Search.MaxExpandedNodes}；" +
+                    "請加大 voxelSizeMm（格子變粗、狀態變少）或提高 search.maxExpandedNodes。",
                     snap, expanded, closest, closest is { } cc ? ManhattanMm(cc, goalCell, grid) : null);
 
             store.Close(s);
@@ -133,7 +139,7 @@ public sealed class AStarRouter : IRouter
             int man = Math.Abs(cx - goalCell.X) + Math.Abs(cy - goalCell.Y) + Math.Abs(cz - goalCell.Z);
             if (man < bestManhattan) { bestManhattan = man; closest = new CellIndex(cx, cy, cz); }
 
-            if (linear == goalLinear && d == arriveDir)
+            if (linear == goalLinear && (anyArrival || d == arriveDir))
             {
                 goalState = s;
                 break;
@@ -148,7 +154,7 @@ public sealed class AStarRouter : IRouter
                 var next = new CellIndex(cx + Dx[nd], cy + Dy[nd], cz + Dz[nd]);
                 if (grid.IsBlocked(next)) continue;
                 if (next == startCell) continue;                       // 起點格是端點專用
-                if (next == goalCell && nd != arriveDir) continue;     // 終點格只能以抵達方向進入
+                if (next == goalCell && nd != arriveDir && !anyArrival) continue;   // 終點格只能以抵達方向進入
 
                 int nrun = nd == d ? Math.Min(run + 1, minRun) : 1;
                 int ns = Encode(grid.LinearIndex(next), nd, nrun, minRun);
@@ -177,9 +183,12 @@ public sealed class AStarRouter : IRouter
 
         if (goalState < 0)
         {
-            return Fail("NoPathExists",
+            var noPath = Fail("NoPathExists",
                 $"起點可達區域已全部展開（{expanded} 個狀態），沒有通往終點的路徑；最接近終點的格子為 {closest}。",
                 snap, expanded, closest, closest is { } c2 ? ManhattanMm(c2, goalCell, grid) : null);
+            if (allowDiagnosis && config.DiagnoseOnFailure)
+                noPath = noPath with { Failure = noPath.Failure! with { Diagnosis = Diagnose(grid, line, config, constraints, minRun) } };
+            return noPath;
         }
 
         // ---- 還原路徑 ----
@@ -227,6 +236,27 @@ public sealed class AStarRouter : IRouter
         return new RouteResult(line.Id, RouteStatus.Success, null, polyline, cells, metrics, snap,
             info0 with { Expanded = expanded }) { Warnings = warnings };
     }
+
+    /// <summary>
+    /// 失敗診斷（同一個格子上能做的放寬）：最小直管 = 0、不要求抵達方向。每項各自從原條件單獨放寬、重跑一次搜尋，
+    /// 重跑時不再診斷。需要重新體素化的放寬（淨距）由 <see cref="LineRouter"/> 補上。
+    /// 條件本來就沒有的（例如最小直管本來就是 1 格）就不列出。
+    /// </summary>
+    private RouteDiagnosis Diagnose(VoxelGrid grid, LineRequest line, RoutingConfig config,
+        RouteConstraints constraints, int minRun)
+    {
+        var outcomes = new List<RelaxationOutcome>();
+        if (minRun > 1)
+            outcomes.Add(Outcome("MinStraight", "最小直管長度",
+                RouteCore(grid, line, config, constraints with { MinStraightBetweenBendsMm = 0 }, allowDiagnosis: false)));
+        if (constraints.EnforceArrivalDirection)
+            outcomes.Add(Outcome("ArrivalDirection", "終點抵達方向",
+                RouteCore(grid, line, config, constraints with { EnforceArrivalDirection = false }, allowDiagnosis: false)));
+        return RouteDiagnosis.From(outcomes);
+    }
+
+    internal static RelaxationOutcome Outcome(string id, string name, RouteResult r) =>
+        new(id, name, r.Success, r.Metrics?.BendCount, r.Metrics?.LengthMm, r.Search.Expanded, r.Failure?.Code);
 
     private static int Encode(int linear, int dir, int run, int minRun) => (linear * DirCount + dir) * minRun + (run - 1);
 

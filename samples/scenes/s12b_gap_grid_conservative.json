@@ -1,0 +1,35 @@
+{
+  "schemaVersion": 1,
+  "name": "s12b 縫隙 399 mm：精確幾何上管過得去，但保守式格子差 1 mm 擋住（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [6000, 4000, 3000]
+  },
+  "obstacles": [
+    {
+      "id": "WALL-LOW",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [2900, 0, 0], "max": [3100, 1851, 3000] }
+    },
+    {
+      "id": "WALL-HIGH",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [2900, 2250, 0], "max": [3100, 4000, 3000] }
+    }
+  ],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": { "position": [500, 2000, 1000], "direction": "+X" },
+      "end": { "position": [5500, 2000, 1000], "direction": "-X" },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

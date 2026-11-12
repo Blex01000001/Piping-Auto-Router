@@ -135,7 +135,8 @@ internal static class RouteTestKit
     /// 規格：起點第一步沿接口方向；抵達終點沿接口方向的反向；不回頭；起點格與終點格是端點專用；
     /// 轉彎前必須已連續直行至少 minCells 步（起點接口段視為已滿足；終點前最後一段不受限）。
     /// </summary>
-    public static long? ReferenceOptimum(VoxelGrid g, LineRequest line, RoutingConfig config, int minCells = 1)
+    public static long? ReferenceOptimum(VoxelGrid g, LineRequest line, RoutingConfig config, int minCells = 1,
+        bool enforceArrival = true)
     {
         if (!g.TrySnap(line.Start.Position, out var s, out _) || !g.TrySnap(line.End.Position, out var e, out _)) return null;
         if (g.IsBlocked(s) || g.IsBlocked(e) || s == e) return null;
@@ -164,7 +165,7 @@ internal static class RouteTestKit
             int rest = cur / minCells;
             int d = rest % 6;
             var c = CellOfLinear(rest / 6);
-            if (c == e && d == arrive) return cd;
+            if (c == e && (!enforceArrival || d == arrive)) return cd;
             for (int nd = 0; nd < 6; nd++)
             {
                 if (cur == startState && nd != startDir) continue;
@@ -174,7 +175,7 @@ internal static class RouteTestKit
                 var n = new CellIndex(c.X + (int)v.X, c.Y + (int)v.Y, c.Z + (int)v.Z);
                 if (g.IsBlocked(n)) continue;
                 if (n == s) continue;                                  // 起點格是端點專用
-                if (n == e && nd != arrive) continue;                  // 終點格只能以抵達方向進入
+                if (n == e && nd != arrive && enforceArrival) continue;   // 終點格只能以抵達方向進入
                 long nc = cd + step + (nd != d ? bend : 0) + (g.IsPenalized(n) ? zone : 0);
                 int ns = Encode(n, nd, nd == d ? Math.Min(run + 1, minCells) : 1);
                 if (nc >= dist[ns]) continue;
@@ -183,6 +184,20 @@ internal static class RouteTestKit
             }
         }
         return null;
+    }
+
+    private static readonly Dictionary<string, RouteResult> Cache = new();
+
+    /// <summary>以預設設定佈線並快取（診斷測試會重複用到的昂貴案例，例如 s09 要跑好幾次搜尋）。</summary>
+    public static RouteResult Cached(string scene, int lineIndex = 0)
+    {
+        string key = $"{scene}#{lineIndex}";
+        lock (Cache)
+        {
+            if (!Cache.TryGetValue(key, out var r))
+                Cache[key] = r = Route(LoadScene(scene), lineIndex);
+            return r;
+        }
     }
 
     public static int MinCells(RuleConfig rules, RoutingConfig config) =>

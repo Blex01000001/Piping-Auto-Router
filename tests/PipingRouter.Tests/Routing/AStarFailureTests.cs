@@ -32,7 +32,7 @@ public class AStarFailureTests
         Assert.True(grid.TrySnap(line.End.Position, out var goal, out _));
         Assert.False(grid.IsBlocked(goal));
 
-        var r = Route(s);
+        var r = Cached("s09_enclosed_nopath");
         AssertFailure(r, "NoPathExists");
         Assert.True(r.Failure!.Expanded > 100);
         Assert.NotNull(r.Failure.ClosestCell);

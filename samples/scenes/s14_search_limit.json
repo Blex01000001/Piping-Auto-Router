@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "s14 長牆擋路、需要繞很遠：用來測試搜尋上限（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [12000, 8000, 3000]
+  },
+  "obstacles": [
+    {
+      "id": "WALL-LONG",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [6000, 0, 0], "max": [6200, 7000, 3000] }
+    }
+  ],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": { "position": [500, 500, 1000], "direction": "+X" },
+      "end": { "position": [11500, 500, 1000], "direction": "-X" },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

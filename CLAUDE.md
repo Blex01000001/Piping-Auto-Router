@@ -57,6 +57,12 @@ ArchitectureTests 會檢查這些約束。
   種子只影響「同一狀態有多個等成本前驅」時留哪一個（備選方案成本相同）。(格子,方向) 狀態無法禁止自交，
   發生時以 RouteResult.Warnings 的 SelfOverlap 標示。找不到路徑回傳 NoPath 與 Failure.Code（StartBlocked／GoalBlocked／
   StartOutOfBounds／GoalOutOfBounds／NoPathExists／SearchLimitExceeded／NotSupported／InvalidInput／GridTooLarge…）。
+- 失敗診斷（RoutingConfig.DiagnoseOnFailure）：NoPathExists／StartBlocked／GoalBlocked 時，把條件各自單獨放寬、重跑一次搜尋，
+  結果放在 RouteFailure.Diagnosis：MinStraight（最小直管 = 0）、ArrivalDirection（不要求抵達方向，AStarRouter 內以同一個格子重跑）、
+  Clearance（障礙物淨距 = 0，需重新體素化，由 LineRouter 補上）、AllRelaxed（全部放寬，用來區分「需要多項一起調整」與
+  「幾何上被阻隔」）。本來就已放寬的條件不列出。Summary 只在證據充分時下結論：AllRelaxed 以 NoPathExists 失敗才說「幾何上被阻隔」，
+  達到搜尋上限者標示「無法判定」。SearchLimitExceeded 不做診斷。
+  注意：保守式體素化可能比精確幾何多擋（例如縫隙差 1 mm），這種假性無解會由 Clearance 放寬後有解顯示出來（s12b）。
 - 形狀重疊（Geometry/ShapeOverlap）的語意：兩形狀各內縮 eps 後做閉集合相交，貼合不算重疊。
 
 ## 驗證（改完必跑，通過才算完成）
@@ -68,5 +74,5 @@ ArchitectureTests 會檢查這些約束。
 雲端容器需先 `apt-get update && apt-get install -y dotnet-sdk-8.0`（容器回收後要重裝）。
 
 ## 範圍
-目前為第一階段（進行到第 7 步：軸向 A* 含彎頭成本與最小直管長度，尚未含失敗診斷／元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
+目前為第一階段（進行到第 8 步：軸向 A* 含彎頭成本、最小直管長度與失敗診斷，尚未含元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
 架構已預留位置，但尚未實作。
