@@ -117,7 +117,7 @@ public class VoxelizerTests
     public void Zone_Forbid_BlocksIntersectingCells_WithoutInflation()
     {
         // 區域 (450..550, 450..550, 0..250)：x、y 各 2 格，z 為 0、1、2 → 12
-        var g = Build(Cube(zones: new[] { TestZone() }), Example, 60);
+        var g = Build(Cube(zones: new[] { TestZone() }), Example, 60, new VoxelizeOptions { ZoneInflation = ZoneInflation.None });
         Assert.Equal(12, g.CountBlocked());
         Assert.Equal(12, g.CountWith(CellFlags.Zone));
         Assert.Equal(0, g.CountWith(CellFlags.Obstacle));
@@ -129,7 +129,7 @@ public class VoxelizerTests
     {
         // 半徑 60：各軸格子間隙為 0（核心）或 50（鄰接）；距離 = √(Σ 間隙²) < 60，所以至多一個軸鄰接。
         //   全核心 2×2×3 = 12；僅 x 鄰接 2×2×3 = 12；僅 y 鄰接 12；僅 z 鄰接（只有上方一格）1×2×2 = 4 → 40
-        var g = Build(Cube(zones: new[] { TestZone() }), Example, 60, new VoxelizeOptions { ZoneInflation = ZoneInflation.PipeRadius });
+        var g = Build(Cube(zones: new[] { TestZone() }), Example, 60);          // 預設就是 PipeRadius
         Assert.Equal(40, g.CountBlocked());
         Assert.True(g.IsBlocked(new CellIndex(4, 4, 3)));
     }
@@ -138,12 +138,21 @@ public class VoxelizerTests
     public void Zone_Penalize_FlagsButDoesNotBlock()
     {
         var rules = Example with { ServiceZonePolicy = new ServiceZonePolicyConfig(ZonePolicy.Penalize, ZonePolicy.Penalize) };
-        var g = Build(Cube(zones: new[] { TestZone() }), rules, 60);
+        var g = Build(Cube(zones: new[] { TestZone() }), rules, 60, new VoxelizeOptions { ZoneInflation = ZoneInflation.None });
         Assert.Equal(0, g.CountBlocked());
         Assert.Equal(12, g.CountWith(CellFlags.Penalized));
         Assert.True(g.IsPenalized(new CellIndex(4, 4, 0)));
         Assert.False(g.IsBlocked(new CellIndex(4, 4, 0)));
         Assert.False(g.IsPenalized(new CellIndex(4, 4, 3)));
+    }
+
+    [Fact]
+    public void Zone_Penalize_UsesTheSameInflationAsForbid()
+    {
+        var rules = Example with { ServiceZonePolicy = new ServiceZonePolicyConfig(ZonePolicy.Penalize, ZonePolicy.Penalize) };
+        var g = Build(Cube(zones: new[] { TestZone() }), rules, 60);          // 預設 PipeRadius
+        Assert.Equal(0, g.CountBlocked());
+        Assert.Equal(40, g.CountWith(CellFlags.Penalized));
     }
 
     [Fact]
@@ -164,7 +173,7 @@ public class VoxelizerTests
     [Fact]
     public void Zone_None_CanLetThePipeSurfaceIntrudeWhenRadiusExceedsHalfAVoxel_PipeRadiusFixesIt()
     {
-        // 這是「維修區不膨脹」預設的已知取捨，這個測試把它固定下來：
+        // 這是「維修區不膨脹（ZoneInflation.None）」的已知取捨，這個測試把它固定下來（預設已改為 PipeRadius）：
         // 區域 x≥401。索引 3 的格子（x 300..400）距離 1，沒被擋；其中心線 x=350 離區域 51，
         // 管半徑 80 → 管表面侵入 29 mm。
         var zone = Zone("Z", ServiceZoneKind.Maintenance, 401, 0, 0, 600, 1000, 1000);
@@ -172,11 +181,11 @@ public class VoxelizerTests
         var seg = new Segment(V(350, 150, 150), V(350, 250, 150));
         var pipe = new Capsule(seg, 80);
 
-        var none = Build(scene, Example, 80);
+        var none = Build(scene, Example, 80, new VoxelizeOptions { ZoneInflation = ZoneInflation.None });
         Assert.False(none.IsBlocked(new CellIndex(3, 1, 1)));
         Assert.True(pipe.ClearanceTo(zone.Box) < 0);               // 精確檢查會抓到（規則檢查器的 ServiceZoneIntrusion）
 
-        var inflated = Build(scene, Example, 80, new VoxelizeOptions { ZoneInflation = ZoneInflation.PipeRadius });
+        var inflated = Build(scene, Example, 80);                  // 預設 PipeRadius
         Assert.True(inflated.IsBlocked(new CellIndex(3, 1, 1)));   // 膨脹後同一格被擋
         var farSeg = new Segment(V(250, 150, 150), V(250, 250, 150));
         Assert.False(inflated.IsBlocked(new CellIndex(2, 1, 1)));
@@ -313,7 +322,7 @@ public class VoxelizerTests
             Zone("MZ2", ServiceZoneKind.Maintenance, 900, 700 + rng.Next(50), 200, 1300, 1100, 800),
         };
         var scene = Scene(zones: zones) with { Bounds = new Aabb(V(0, 0, 0), V(1500, 1500, 1500)) };
-        var g = Build(scene, Example, radius, new VoxelizeOptions { ZoneInflation = ZoneInflation.PipeRadius });
+        var g = Build(scene, Example, radius);
 
         long n = 0;
         for (int z = 0; z < g.Nz; z++)

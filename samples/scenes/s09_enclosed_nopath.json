@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "name": "s09 終點被封閉空間圍住，無解（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [6000, 4000, 3000]
+  },
+  "obstacles": [
+    {
+      "id": "W-LEFT",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [3800, 1300, 300], "max": [4000, 2700, 1700] }
+    },
+    {
+      "id": "W-RIGHT",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [5000, 1300, 300], "max": [5200, 2700, 1700] }
+    },
+    {
+      "id": "W-FRONT",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [4000, 1300, 300], "max": [5000, 1500, 1700] }
+    },
+    {
+      "id": "W-BACK",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [4000, 2500, 300], "max": [5000, 2700, 1700] }
+    },
+    {
+      "id": "W-FLOOR",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [4000, 1500, 300], "max": [5000, 2500, 500] }
+    },
+    {
+      "id": "W-CEIL",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [4000, 1500, 1500], "max": [5000, 2500, 1700] }
+    }
+  ],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": {
+        "position": [500, 2000, 1000],
+        "direction": "+X"
+      },
+      "end": {
+        "position": [4500, 2000, 1000],
+        "direction": "-X"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

@@ -1,0 +1,57 @@
+{
+  "schemaVersion": 1,
+  "name": "s10 起點或終點被擋住（假資料）：三條管線各有一種原因",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [6000, 4000, 3000]
+  },
+  "obstacles": [
+    {
+      "id": "EQ-01",
+      "kind": "equipment",
+      "shape": { "type": "box", "min": [400, 1800, 0], "max": [800, 2200, 2000] }
+    },
+    {
+      "id": "V-101",
+      "kind": "vessel",
+      "shape": {
+        "type": "cylinder",
+        "baseCenter": [5000, 3000, 0],
+        "radius": 400,
+        "height": 2500,
+        "axis": "Z"
+      }
+    }
+  ],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-START-INSIDE",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": { "position": [600, 2000, 1000], "direction": "+X" },
+      "end": { "position": [5000, 500, 1000], "direction": "-X" },
+      "componentSequence": []
+    },
+    {
+      "id": "L-GOAL-INSIDE",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": { "position": [500, 500, 1000], "direction": "+X" },
+      "end": { "position": [5000, 3000, 1000], "direction": "-X" },
+      "componentSequence": []
+    },
+    {
+      "id": "L-START-TOO-CLOSE",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": { "position": [900, 2000, 1000], "direction": "+X" },
+      "end": { "position": [5000, 500, 1000], "direction": "-X" },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

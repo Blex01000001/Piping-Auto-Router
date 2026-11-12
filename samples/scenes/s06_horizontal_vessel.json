@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 1,
+  "name": "s06 越過臥式容器（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [8000, 4000, 3000]
+  },
+  "obstacles": [
+    {
+      "id": "V-201",
+      "kind": "vessel",
+      "shape": {
+        "type": "cylinder",
+        "baseCenter": [4000, 500, 1000],
+        "radius": 500,
+        "height": 3000,
+        "axis": "Y"
+      }
+    }
+  ],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": {
+        "position": [500, 2000, 1000],
+        "direction": "+X"
+      },
+      "end": {
+        "position": [7500, 2000, 1000],
+        "direction": "-X"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

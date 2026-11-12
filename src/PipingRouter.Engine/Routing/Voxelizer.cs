@@ -4,13 +4,13 @@ using PipingRouter.Engine.Scene;
 
 namespace PipingRouter.Engine.Routing;
 
-/// <summary>維修／操作區（策略為 Forbid 時）要不要額外膨脹管半徑。預設 None（不膨脹）。</summary>
+/// <summary>維修／操作區（策略為 Forbid 時）要不要額外膨脹管半徑。預設 PipeRadius。</summary>
 public enum ZoneInflation
 {
-    /// <summary>區域本身當障礙，不膨脹。管線中心線可能貼近區域邊界，管表面是否侵入由規則檢查器把關。</summary>
+    /// <summary>區域本身當障礙，不膨脹。管半徑超過半格時，管表面可能侵入區域，由規則檢查器的 ServiceZoneIntrusion 抓出。</summary>
     None,
 
-    /// <summary>區域膨脹管半徑（含保溫），使「格子通過 ⇒ 管表面不侵入區域」。</summary>
+    /// <summary>區域膨脹管半徑（含保溫），使「格子通過 ⇒ 管表面不侵入區域」，佈線結果與規則檢查器一致。</summary>
     PipeRadius,
 }
 
@@ -19,7 +19,7 @@ public sealed record VoxelizeOptions
     /// <summary>格子總數上限，超過回報 GridTooLarge（避免耗盡記憶體；每格 1 byte）。</summary>
     public long MaxCells { get; init; } = 64_000_000;
 
-    public ZoneInflation ZoneInflation { get; init; } = ZoneInflation.None;
+    public ZoneInflation ZoneInflation { get; init; } = ZoneInflation.PipeRadius;
 }
 
 public sealed record VoxelizeResult(VoxelGrid? Grid, string? ErrorCode, string? Message)

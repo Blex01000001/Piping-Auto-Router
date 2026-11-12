@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "s02 空場景 L 型一個彎頭（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [6000, 4000, 3000]
+  },
+  "obstacles": [],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": {
+        "position": [500, 500, 1000],
+        "direction": "+X"
+      },
+      "end": {
+        "position": [3500, 2500, 1000],
+        "direction": "-Y"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

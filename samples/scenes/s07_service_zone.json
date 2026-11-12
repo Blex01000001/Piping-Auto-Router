@@ -1,0 +1,40 @@
+{
+  "schemaVersion": 1,
+  "name": "s07 維修區擋在中間（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [6000, 4000, 3000]
+  },
+  "obstacles": [],
+  "serviceZones": [
+    {
+      "id": "MZ-01",
+      "kind": "maintenance",
+      "shape": {
+        "type": "box",
+        "min": [2500, 1000, 0],
+        "max": [3500, 3000, 3000]
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": {
+        "position": [500, 2000, 1000],
+        "direction": "+X"
+      },
+      "end": {
+        "position": [5500, 2000, 1000],
+        "direction": "-X"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

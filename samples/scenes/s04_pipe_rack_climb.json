@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "name": "s04 從地面爬到鋼構高度再水平（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [6000, 4000, 5000]
+  },
+  "obstacles": [
+    {
+      "id": "EQ-01",
+      "kind": "equipment",
+      "shape": {
+        "type": "box",
+        "min": [1000, 1500, 0],
+        "max": [2000, 2500, 1500]
+      }
+    },
+    {
+      "id": "STL-01",
+      "kind": "steel",
+      "shape": {
+        "type": "box",
+        "min": [3000, 0, 2000],
+        "max": [3200, 4000, 2200]
+      }
+    }
+  ],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": {
+        "position": [500, 2000, 500],
+        "direction": "+Z"
+      },
+      "end": {
+        "position": [5500, 2000, 3500],
+        "direction": "-X"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}
