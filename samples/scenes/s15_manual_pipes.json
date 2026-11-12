@@ -1,0 +1,147 @@
+{
+  "schemaVersion": 1,
+  "name": "s15 人工管線規則檢查（假資料）：六種違規加一條合格管線",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [12000, 8000, 5000]
+  },
+  "obstacles": [
+    {
+      "id": "EQ-01",
+      "kind": "equipment",
+      "shape": {
+        "type": "box",
+        "min": [1500, 3640, 0],
+        "max": [2500, 4500, 2000]
+      }
+    },
+    {
+      "id": "V-101",
+      "kind": "vessel",
+      "shape": {
+        "type": "cylinder",
+        "baseCenter": [7000, 2000, 0],
+        "radius": 600,
+        "height": 3000,
+        "axis": "Z"
+      }
+    }
+  ],
+  "serviceZones": [
+    {
+      "id": "MZ-01",
+      "kind": "maintenance",
+      "shape": {
+        "type": "box",
+        "min": [9000, 4000, 0],
+        "max": [10000, 5000, 2500]
+      }
+    }
+  ],
+  "lines": [],
+  "pipes": [
+    {
+      "id": "P-OK",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "points": [
+        [500, 1000, 1200],
+        [5500, 1000, 1200],
+        [5500, 3000, 1200]
+      ],
+      "components": [
+        {
+          "id": "HV-OK",
+          "type": "handValve",
+          "alongPolyline": {
+            "segmentIndex": 0,
+            "distanceFromStartMm": 2000
+          }
+        }
+      ]
+    },
+    {
+      "id": "P-HEIGHT",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "points": [
+        [500, 2000, 1400],
+        [3500, 2000, 1400]
+      ],
+      "components": [
+        {
+          "id": "HV-HI",
+          "type": "handValve",
+          "alongPolyline": {
+            "segmentIndex": 0,
+            "distanceFromStartMm": 1500
+          }
+        }
+      ]
+    },
+    {
+      "id": "P-CLEAR",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "points": [
+        [500, 3500, 1000],
+        [4000, 3500, 1000]
+      ],
+      "components": []
+    },
+    {
+      "id": "P-COLLIDE",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "points": [
+        [6000, 2000, 1000],
+        [8000, 2000, 1000]
+      ],
+      "components": []
+    },
+    {
+      "id": "P-ZONE",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "points": [
+        [8500, 4500, 1000],
+        [10500, 4500, 1000]
+      ],
+      "components": []
+    },
+    {
+      "id": "P-BENDS",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "points": [
+        [500, 6000, 1000],
+        [1500, 6000, 1000],
+        [1500, 6200, 1000],
+        [2500, 6200, 1000]
+      ],
+      "components": []
+    },
+    {
+      "id": "P-FLOW",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "points": [
+        [500, 7000, 1500],
+        [3500, 7000, 1500]
+      ],
+      "components": [
+        {
+          "id": "FM-1",
+          "type": "flowMeter",
+          "alongPolyline": {
+            "segmentIndex": 0,
+            "distanceFromStartMm": 800
+          }
+        }
+      ]
+    }
+  ]
+}

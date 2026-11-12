@@ -18,6 +18,7 @@
   },
   "severities": {
     "Collision": "error",
+    "ComponentStraightRun": "error",
     "ControlValveStraightRun": "error",
     "FlowMeterStraightRun": "error",
     "HandwheelClearance": "error",

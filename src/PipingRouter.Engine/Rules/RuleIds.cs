@@ -9,6 +9,8 @@ public static class RuleIds
     public const string HandwheelClearance = "HandwheelClearance";
     public const string FlowMeterStraightRun = "FlowMeterStraightRun";
     public const string ControlValveStraightRun = "ControlValveStraightRun";
+    /// <summary>流量計、控制閥以外、但型錄有定義前後直管需求的元件（例如逆止閥）。</summary>
+    public const string ComponentStraightRun = "ComponentStraightRun";
     public const string ServiceZoneIntrusion = "ServiceZoneIntrusion";
     public const string MinStraightBetweenBends = "MinStraightBetweenBends";
     public const string UnsupportedComponent = "UnsupportedComponent";
@@ -16,7 +18,7 @@ public static class RuleIds
     public static readonly IReadOnlyList<string> All = new[]
     {
         Collision, MinClearance, HandwheelHeight, HandwheelClearance,
-        FlowMeterStraightRun, ControlValveStraightRun, ServiceZoneIntrusion,
+        FlowMeterStraightRun, ControlValveStraightRun, ComponentStraightRun, ServiceZoneIntrusion,
         MinStraightBetweenBends, UnsupportedComponent,
     };
 

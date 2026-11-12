@@ -36,7 +36,12 @@ ArchitectureTests 會檢查這些約束。
 - 最小直管長度：mm，只約束兩個彎頭之間（彎頭中心到中心）。
 - 同一輸入必須得到相同結果；同成本平手只由 seed 決定。成本用整數（定點數）計算。
 - 失敗要回傳明確的失敗結果與原因，不可丟例外或當機。
-- 規則檢查嚴重度分 error / warning；垂直管上的閥目前為 NotSupported。
+- 規則檢查嚴重度分 error / warning（可由設定檔 severities 調整）；垂直或傾斜管上的閥目前為 UnsupportedComponent（warning）。
+- 規則檢查器（Rules/RuleChecker）使用連續座標與精確公式，與佈線無關，可檢查人工管線；
+  每項輸出含 IsViolation／Location／Measured／Limit，並附各規則「最緊」那筆的通過紀錄。
+  流向 = 折線第一點到最後一點；直管段必須是純直管（被彎頭、其他元件本體、管線端點截斷）；
+  手輪淨空區不與該元件自己的管線比較。
+- 形狀重疊（Geometry/ShapeOverlap）的語意：兩形狀各內縮 eps 後做閉集合相交，貼合不算重疊。
 
 ## 驗證（改完必跑，通過才算完成）
     dotnet build

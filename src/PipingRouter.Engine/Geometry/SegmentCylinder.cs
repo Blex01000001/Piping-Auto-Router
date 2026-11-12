@@ -14,7 +14,10 @@ public static class SegmentCylinder
     /// （軸向項與徑向項皆為凸且非負），故以三分搜尋找最小值；
     /// 直接對距離（非距離平方）搜尋，使相交時的結果誤差在 1e-12 量級。
     /// </summary>
-    public static double Distance(Segment s, AxisCylinder cyl)
+    public static double Distance(Segment s, AxisCylinder cyl) => Closest(s, cyl).Distance;
+
+    /// <summary>同 <see cref="Distance"/>，並回傳線段上最近點的參數 t ∈ [0,1]。</summary>
+    public static (double Distance, double T) Closest(Segment s, AxisCylinder cyl)
     {
         double lo = 0, hi = 1;
         for (int i = 0; i < Iterations; i++)
@@ -23,9 +26,13 @@ public static class SegmentCylinder
             if (cyl.DistanceTo(s.PointAt(m1)) <= cyl.DistanceTo(s.PointAt(m2))) hi = m2;
             else lo = m1;
         }
-        double best = cyl.DistanceTo(s.PointAt(0.5 * (lo + hi)));
-        best = Math.Min(best, cyl.DistanceTo(s.A));
-        best = Math.Min(best, cyl.DistanceTo(s.B));
-        return best;
+        double tMid = 0.5 * (lo + hi);
+        double best = cyl.DistanceTo(s.PointAt(tMid));
+        double bestT = tMid;
+        double dA = cyl.DistanceTo(s.A);
+        if (dA < best) { best = dA; bestT = 0; }
+        double dB = cyl.DistanceTo(s.B);
+        if (dB < best) { best = dB; bestT = 1; }
+        return (best, bestT);
     }
 }

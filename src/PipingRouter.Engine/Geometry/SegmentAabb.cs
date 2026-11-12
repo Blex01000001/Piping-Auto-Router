@@ -33,7 +33,10 @@ public static class SegmentAabb
     /// 線段到方塊的最短距離（相交或接觸為 0）。精確解：沿線段的距離平方是分段二次式，
     /// 斷點為線段進出各軸 slab 的位置；各區間取二次式的極小點（夾在區間內）。
     /// </summary>
-    public static double Distance(Segment s, Aabb box)
+    public static double Distance(Segment s, Aabb box) => Closest(s, box).Distance;
+
+    /// <summary>同 <see cref="Distance"/>，並回傳線段上最近點的參數 t ∈ [0,1]（供標示違規位置）。</summary>
+    public static (double Distance, double T) Closest(Segment s, Aabb box)
     {
         var d = s.Direction;
         var ts = new List<double>(8) { 0, 1 };
@@ -46,6 +49,7 @@ public static class SegmentAabb
         ts.Sort();
 
         double best = double.MaxValue;
+        double bestT = 0;
         for (int k = 0; k + 1 < ts.Count; k++)
         {
             double t0 = ts[k], t1 = ts[k + 1];
@@ -69,12 +73,16 @@ public static class SegmentAabb
             }
             if (qa > 0) Consider(Math.Clamp(-qb / (2 * qa), t0, t1));
         }
-        return Math.Sqrt(best);
+        return (Math.Sqrt(best), bestT);
 
         void Consider(double t)
         {
             double v = box.SquaredDistanceTo(s.PointAt(t));   // 直接以點計算，避免二次式相消誤差
-            if (v < best) best = v;
+            if (v < best)
+            {
+                best = v;
+                bestT = t;
+            }
         }
     }
 
