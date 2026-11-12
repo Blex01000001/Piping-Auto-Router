@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 1,
+  "lineId": "L-001",
+  "status": "NoPath",
+  "failure": {
+    "code": "NoPathExists",
+    "message": "起點可達區域已全部展開（216 個狀態），沒有通往終點的路徑；最接近終點的格子為 (55,2,0)。",
+    "expanded": 216,
+    "closestCell": [55, 2, 0],
+    "closestDistanceMm": 100,
+    "diagnosis": {
+      "summary": "放寬以下任一項即可找到路徑：最小直管長度、終點抵達方向。",
+      "relaxations": [
+        {
+          "id": "MinStraight",
+          "name": "最小直管長度",
+          "succeeds": true,
+          "bendCount": 2,
+          "lengthMm": 5200,
+          "expanded": 151,
+          "failureCode": null
+        },
+        {
+          "id": "ArrivalDirection",
+          "name": "終點抵達方向",
+          "succeeds": true,
+          "bendCount": 1,
+          "lengthMm": 5200,
+          "expanded": 53,
+          "failureCode": null
+        },
+        {
+          "id": "Clearance",
+          "name": "障礙物淨距",
+          "succeeds": false,
+          "bendCount": null,
+          "lengthMm": null,
+          "expanded": 216,
+          "failureCode": "NoPathExists"
+        },
+        {
+          "id": "AllRelaxed",
+          "name": "全部條件",
+          "succeeds": true,
+          "bendCount": 1,
+          "lengthMm": 5200,
+          "expanded": 53,
+          "failureCode": null
+        }
+      ]
+    }
+  },
+  "polyline": [],
+  "cells": [],
+  "metrics": null,
+  "gridSnap": {
+    "startPort": [500, 2000, 1000],
+    "startCell": [5, 1, 0],
+    "startOffsetMm": 70.71067811865476,
+    "endPort": [5500, 2200, 1000],
+    "endCell": [55, 3, 0],
+    "endOffsetMm": 70.71067811865476
+  },
+  "warnings": [],
+  "search": {
+    "expanded": 216,
+    "seed": 0,
+    "voxelSizeMm": 100,
+    "minStraightCells": 3
+  }
+}

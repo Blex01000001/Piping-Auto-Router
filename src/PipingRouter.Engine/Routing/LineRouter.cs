@@ -50,4 +50,39 @@ public static class LineRouter
         }
         return result;
     }
+
+    /// <summary>
+    /// 同成本的備選方案：以 config 的種子為起點，依序換種子（種子 + 1、+ 2…）重跑，依路徑去重，最多嘗試 maxSeeds 個種子，
+    /// 湊滿 count 條即停。格子只建一次。種子只影響等成本路徑之間的選擇，所以每條備選的成本都相同、都合法。
+    /// 第一條永遠是 config 種子的結果；若第一條就失敗，只回傳那個失敗（含診斷）。結果順序確定。
+    /// 路徑只有一種時（例如空場景直線）會少於 count 條。
+    /// </summary>
+    public static IReadOnlyList<RouteResult> RouteAlternatives(
+        SceneModel scene,
+        LineRequest line,
+        RuleConfig rules,
+        RoutingConfig config,
+        int count,
+        int maxSeeds = 32,
+        VoxelizeOptions? options = null,
+        IRouter? router = null)
+    {
+        router ??= new AStarRouter();
+        var first = Route(scene, line, rules, config, options, router);
+        if (!first.Success || count <= 1) return new[] { first };
+
+        var built = Voxelizer.Build(scene, rules, config.VoxelSizeMm, line.CollisionRadiusMm, options);
+        if (built.Grid == null) return new[] { first };
+
+        var constraints = RouteConstraints.From(rules);
+        var results = new List<RouteResult> { first };
+        var seen = new HashSet<string> { string.Join(";", first.Cells) };
+        for (int i = 1; i < maxSeeds && results.Count < count; i++)
+        {
+            var cfg = config with { Search = config.Search with { Seed = config.Search.Seed + i } };
+            var r = router.Route(built.Grid, line, cfg, constraints);
+            if (r.Success && seen.Add(string.Join(";", r.Cells))) results.Add(r);
+        }
+        return results;
+    }
 }

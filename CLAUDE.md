@@ -63,6 +63,12 @@ ArchitectureTests 會檢查這些約束。
   「幾何上被阻隔」）。本來就已放寬的條件不列出。Summary 只在證據充分時下結論：AllRelaxed 以 NoPathExists 失敗才說「幾何上被阻隔」，
   達到搜尋上限者標示「無法判定」。SearchLimitExceeded 不做診斷。
   注意：保守式體素化可能比精確幾何多擋（例如縫隙差 1 mm），這種假性無解會由 Clearance 放寬後有解顯示出來（s12b）。
+- 佈線結果的 JSON（Io/RouteResultJson，讀寫皆有）：欄位順序固定、數字用最短可還原格式、不含任何耗時，
+  所以同一輸入兩次佈線的輸出逐位元相同；成本是 ×1000 定點整數。Dashboard 讀的就是這個格式。
+  確定性測試涵蓋：每個樣本場景連跑兩次、與執行順序無關、多執行緒平行、golden 檔（tests/PipingRouter.Tests/Golden/*.route.json）。
+  有意改變輸出格式或演算法結果時，用 `UPDATE_GOLDEN=1 dotnet test --filter Golden_` 重新產生，**務必檢視 git diff 再提交**。
+- 備選方案（LineRouter.RouteAlternatives）：換種子（config 種子 + 1、+ 2…）重跑並依路徑去重；每條成本相同、都合法；
+  路徑只有一種時會少於要求的條數。
 - 形狀重疊（Geometry/ShapeOverlap）的語意：兩形狀各內縮 eps 後做閉集合相交，貼合不算重疊。
 
 ## 驗證（改完必跑，通過才算完成）
@@ -74,5 +80,5 @@ ArchitectureTests 會檢查這些約束。
 雲端容器需先 `apt-get update && apt-get install -y dotnet-sdk-8.0`（容器回收後要重裝）。
 
 ## 範圍
-目前為第一階段（進行到第 8 步：軸向 A* 含彎頭成本、最小直管長度與失敗診斷，尚未含元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
+目前為第一階段（進行到第 9 步：軸向 A* 含彎頭成本、最小直管長度、失敗診斷、確定性與結果 JSON，尚未含元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
 架構已預留位置，但尚未實作。

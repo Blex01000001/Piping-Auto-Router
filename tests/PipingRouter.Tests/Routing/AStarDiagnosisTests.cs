@@ -190,7 +190,7 @@ public class AStarDiagnosisTests
     [Fact]
     public void RelaxationsThatAlreadyHold_AreNotListed()
     {
-        var s = LoadScene("s09_enclosed_nopath");
+        var s = LoadScene("s12_gap_too_narrow");                                   // 很快就窮盡的無解場景
         var noMin = Example with { MinStraightBetweenBendsMm = 0 };              // N = 1：沒有最小直管可放寬
         var r = Route(s, 0, Config, noMin);
         Assert.Equal(new[] { "ArrivalDirection", "Clearance", "AllRelaxed" }, Ids(r));
