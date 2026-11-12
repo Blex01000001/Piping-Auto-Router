@@ -1,0 +1,6 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Engine：純領域邏輯。不得有任何 ProjectReference / PackageReference，
+       不得引用 Blazor、UI 或 Windows 專用 API。 -->
+
+</Project>

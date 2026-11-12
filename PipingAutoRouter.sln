@@ -1,0 +1,36 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{31989D5B-C1B3-4221-B2B5-6742C6886124}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipingRouter.Engine", "src\PipingRouter.Engine\PipingRouter.Engine.csproj", "{6A5188FA-AA84-4066-A821-9C1F1B8E4C31}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{1C2C7C62-EB32-4BFA-9DB6-7FCC765F2D7F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PipingRouter.Tests", "tests\PipingRouter.Tests\PipingRouter.Tests.csproj", "{EF4100BD-FDC7-4666-935B-E0B5429FF42E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{6A5188FA-AA84-4066-A821-9C1F1B8E4C31}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A5188FA-AA84-4066-A821-9C1F1B8E4C31}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A5188FA-AA84-4066-A821-9C1F1B8E4C31}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A5188FA-AA84-4066-A821-9C1F1B8E4C31}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF4100BD-FDC7-4666-935B-E0B5429FF42E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF4100BD-FDC7-4666-935B-E0B5429FF42E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF4100BD-FDC7-4666-935B-E0B5429FF42E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF4100BD-FDC7-4666-935B-E0B5429FF42E}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{6A5188FA-AA84-4066-A821-9C1F1B8E4C31} = {31989D5B-C1B3-4221-B2B5-6742C6886124}
+		{EF4100BD-FDC7-4666-935B-E0B5429FF42E} = {1C2C7C62-EB32-4BFA-9DB6-7FCC765F2D7F}
+	EndGlobalSection
+EndGlobal
