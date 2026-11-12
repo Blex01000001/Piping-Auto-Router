@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "s08b 場景在 Y 方向只有 4 格寬：偏移 2 格的接口在最小直管 3 格時無解，限制放寬到 2 格以內才有解（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 950,
+  "bounds": {
+    "min": [0, 1900, 950],
+    "max": [6000, 2300, 1050]
+  },
+  "obstacles": [],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": {
+        "position": [500, 2000, 1000],
+        "direction": "+X"
+      },
+      "end": {
+        "position": [5500, 2200, 1000],
+        "direction": "-X"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

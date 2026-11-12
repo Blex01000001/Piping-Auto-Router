@@ -99,6 +99,14 @@ internal static class RouteTestKit
                 Assert.True(Math.Abs(d1.Dot(d2)) < 1e-9, $"頂點 {i + 1} 不是 90 度彎頭");
             }
         }
+        // 兩彎頭之間（不含起點接口段與終點最後一段）的每一段直管 ≥ 最小直管
+        double minMm = rules.MinStraightBetweenBendsMm;
+        for (int i = 1; i + 2 < poly.Count; i++)
+        {
+            double len = poly[i].DistanceTo(poly[i + 1]);
+            Assert.True(len >= minMm - rules.EpsilonMm, $"第 {i} 段（兩彎頭之間）只有 {len} mm，小於最小直管 {minMm} mm");
+        }
+
         int bends = dirs.Zip(dirs.Skip(1), (a, b) => a != b).Count(x => x);
         Assert.Equal(bends, r.Metrics!.BendCount);
         Assert.Equal(poly.Count - 2, bends);
@@ -115,15 +123,19 @@ internal static class RouteTestKit
         // 精確規則檢查（連續座標）：格子層通過的路徑不應有干涉、淨距或維修區違規
         var pipe = new PipeDef(line.Id, null, line.OuterDiameterMm, line.InsulationThicknessMm, poly, Array.Empty<PlacedComponent>());
         var report = RuleChecker.Check(scene, rules, new[] { pipe });
-        var ids = new List<string> { RuleIds.Collision, RuleIds.MinClearance };
+        var ids = new List<string> { RuleIds.Collision, RuleIds.MinClearance, RuleIds.MinStraightBetweenBends };
         if (rules.ServiceZonePolicy.Maintenance == ZonePolicy.Forbid && rules.ServiceZonePolicy.Operation == ZonePolicy.Forbid)
             ids.Add(RuleIds.ServiceZoneIntrusion);
         var bad = report.Violations.Where(v => ids.Contains(v.RuleId)).ToList();
         Assert.True(bad.Count == 0, "精確檢查發現違規：\n" + string.Join("\n", bad.Select(Line)));
     }
 
-    /// <summary>獨立的參考解：沒有啟發函數的 Dijkstra，與 A* 共用同一份規格（不是同一份程式）。回傳最佳成本，無解回傳 null。</summary>
-    public static long? ReferenceOptimum(VoxelGrid g, LineRequest line, RoutingConfig config)
+    /// <summary>
+    /// 獨立的參考解：沒有啟發函數的 Dijkstra，與 A* 共用同一份規格（不是同一份程式）。回傳最佳成本，無解回傳 null。
+    /// 規格：起點第一步沿接口方向；抵達終點沿接口方向的反向；不回頭；起點格與終點格是端點專用；
+    /// 轉彎前必須已連續直行至少 minCells 步（起點接口段視為已滿足；終點前最後一段不受限）。
+    /// </summary>
+    public static long? ReferenceOptimum(VoxelGrid g, LineRequest line, RoutingConfig config, int minCells = 1)
     {
         if (!g.TrySnap(line.Start.Position, out var s, out _) || !g.TrySnap(line.End.Position, out var e, out _)) return null;
         if (g.IsBlocked(s) || g.IsBlocked(e) || s == e) return null;
@@ -132,34 +144,47 @@ internal static class RouteTestKit
         long bend = (long)Math.Round(config.Weights.Bend * CostUnits.Scale);
         long zone = (long)Math.Round(config.Weights.ZonePenaltyPerCell * CostUnits.Scale);
         int startDir = (int)line.Start.Direction, arrive = (int)line.End.Direction.Opposite();
+        minCells = Math.Max(1, minCells);
 
-        var dist = new Dictionary<(CellIndex, int), long>();
-        var pq = new PriorityQueue<(CellIndex, int), long>();
-        dist[(s, startDir)] = 0;
-        pq.Enqueue((s, startDir), 0);
-        var done = new HashSet<(CellIndex, int)>();
-        while (pq.TryDequeue(out var cur, out long cd))
+        int Encode(CellIndex c, int dir, int run) => (g.LinearIndex(c) * 6 + dir) * minCells + (run - 1);
+        CellIndex CellOfLinear(int lin) => new(lin % g.Nx, lin / g.Nx % g.Ny, lin / (g.Nx * g.Ny));
+
+        long[] dist = new long[g.CellCount * 6 * minCells];
+        Array.Fill(dist, long.MaxValue);
+        bool[] done = new bool[dist.Length];
+        var pq = new PriorityQueue<int, long>();
+        int startState = Encode(s, startDir, minCells);
+        dist[startState] = 0;
+        pq.Enqueue(startState, 0);
+        while (pq.TryDequeue(out int cur, out long cd))
         {
-            if (!done.Add(cur)) continue;
-            var (c, d) = cur;
+            if (done[cur]) continue;
+            done[cur] = true;
+            int run = cur % minCells + 1;
+            int rest = cur / minCells;
+            int d = rest % 6;
+            var c = CellOfLinear(rest / 6);
             if (c == e && d == arrive) return cd;
-            foreach (var nd in Enumerable.Range(0, 6))
+            for (int nd = 0; nd < 6; nd++)
             {
-                bool isInitial = c == s && d == startDir && cd == 0;
-                if (isInitial && nd != startDir) continue;
+                if (cur == startState && nd != startDir) continue;
                 if (nd == (d ^ 1)) continue;
+                if (nd != d && run < minCells) continue;               // 兩彎頭之間的直管不夠長
                 var v = ((AxisDirection)nd).ToVector();
                 var n = new CellIndex(c.X + (int)v.X, c.Y + (int)v.Y, c.Z + (int)v.Z);
                 if (g.IsBlocked(n)) continue;
                 if (n == s) continue;                                  // 起點格是端點專用
                 if (n == e && nd != arrive) continue;                  // 終點格只能以抵達方向進入
                 long nc = cd + step + (nd != d ? bend : 0) + (g.IsPenalized(n) ? zone : 0);
-                var key = (n, nd);
-                if (dist.TryGetValue(key, out long old) && old <= nc) continue;
-                dist[key] = nc;
-                pq.Enqueue(key, nc);
+                int ns = Encode(n, nd, nd == d ? Math.Min(run + 1, minCells) : 1);
+                if (nc >= dist[ns]) continue;
+                dist[ns] = nc;
+                pq.Enqueue(ns, nc);
             }
         }
         return null;
     }
+
+    public static int MinCells(RuleConfig rules, RoutingConfig config) =>
+        RouteConstraints.From(rules).MinStraightCells(config.VoxelSizeMm);
 }

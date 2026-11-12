@@ -8,5 +8,5 @@ namespace PipingRouter.Engine.Routing;
 /// </summary>
 public interface IRouter
 {
-    RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config);
+    RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config, RouteConstraints constraints);
 }

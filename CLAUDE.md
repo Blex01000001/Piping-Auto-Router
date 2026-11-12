@@ -47,10 +47,13 @@ ArchitectureTests 會檢查這些約束。
   維修／操作區：策略 Forbid → 標為不可通過，預設膨脹管半徑（ZoneInflation.PipeRadius），
   使佈線結果與規則檢查器的 ServiceZoneIntrusion 一致；改成 None 則區域不膨脹，管半徑 > 半格時管表面可能侵入區域；
   策略 Penalize → 只標 Penalized，供成本函數使用。
-- 軸向 A*（Routing/AStarRouter）：狀態 = (格子, 方向)；起點第一步必須沿起點接口方向，抵達終點必須沿終點接口方向的反向
+- 軸向 A*（Routing/AStarRouter）：狀態 = (格子, 方向, 連續直管格數 run∈[1,N])；起點第一步必須沿起點接口方向，抵達終點必須沿終點接口方向的反向
   （Direction = 接口外向法線 = 管線離開接口時行進的方向）；禁止 180 度回頭；起點格與終點格是端點專用（不可回到起點、
   終點格只能以抵達方向進入一次）。成本是整數定點（×1000）：長度權重 × 每步毫米 + 彎頭權重 × 彎頭 + 區域懲罰 × 進入 Penalized 格。
   啟發函數 = 曼哈頓距離 × 每步成本。折線一律取格子中心（保證全為軸向、共線點合併），接口原座標與吸附誤差記錄在 RouteResult.Snap。
+  最小直管長度（RouteConstraints，來自規則設定）：N = max(1, ceil(最小直管mm / 格子mm))（向上取整，保守）；
+  轉彎只在 run ≥ N 時允許，只約束「兩個彎頭之間」——起點接口段（初始 run = N）與抵達終點的最後一段不受限。
+  狀態數 = 格子 × 6 × N，超過 int 範圍回報 GridTooLarge。
   種子只影響「同一狀態有多個等成本前驅」時留哪一個（備選方案成本相同）。(格子,方向) 狀態無法禁止自交，
   發生時以 RouteResult.Warnings 的 SelfOverlap 標示。找不到路徑回傳 NoPath 與 Failure.Code（StartBlocked／GoalBlocked／
   StartOutOfBounds／GoalOutOfBounds／NoPathExists／SearchLimitExceeded／NotSupported／InvalidInput／GridTooLarge…）。
@@ -65,5 +68,5 @@ ArchitectureTests 會檢查這些約束。
 雲端容器需先 `apt-get update && apt-get install -y dotnet-sdk-8.0`（容器回收後要重裝）。
 
 ## 範圍
-目前為第一階段（進行到第 6 步：軸向 A*，尚未含最小直管長度／元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
+目前為第一階段（進行到第 7 步：軸向 A* 含彎頭成本與最小直管長度，尚未含失敗診斷／元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
 架構已預留位置，但尚未實作。

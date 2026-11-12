@@ -21,7 +21,7 @@ public class AStarSceneTests
         var r = Route(s, lineIndex, cfg, rules);
         AssertValid(s, line, r, grid, cfg, rules);
         h = new SceneModelHolder(s, line, grid);
-        long? best = ReferenceOptimum(grid, line, cfg);
+        long? best = ReferenceOptimum(grid, line, cfg, MinCells(rules ?? Example, cfg));
         Assert.Equal(best, r.Metrics!.Cost.Total);                        // A* 的成本 = Dijkstra 的最佳成本
         return r;
     }
@@ -184,7 +184,7 @@ public class AStarSceneTests
         var grid = GridFor(scene, line);
         var r = Route(scene);
         AssertValid(scene, line, r, grid);
-        Assert.Equal(ReferenceOptimum(grid, line, Config), r.Metrics!.Cost.Total);
+        Assert.Equal(ReferenceOptimum(grid, line, Config, MinCells(Example, Config)), r.Metrics!.Cost.Total);
         Assert.True(r.Metrics.BendCount >= 2);
     }
 

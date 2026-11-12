@@ -38,7 +38,7 @@ public sealed record GridSnap(
     Vec3 StartPort, CellIndex StartCell, double StartOffsetMm,
     Vec3 EndPort, CellIndex EndCell, double EndOffsetMm);
 
-public sealed record RouteSearchInfo(long Expanded, long Seed, double VoxelSizeMm);
+public sealed record RouteSearchInfo(long Expanded, long Seed, double VoxelSizeMm, int MinStraightCells = 1);
 
 /// <summary>
 /// 成功但值得注意的事。Code：SelfOverlap＝路徑重複經過同一個格子（管線與自己重疊，實體上無效）。

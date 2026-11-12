@@ -21,6 +21,6 @@ public static class LineRouter
                 new RouteFailure(grid.ErrorCode ?? "InvalidInput", grid.Message ?? "無法建立格子"),
                 new RouteSearchInfo(0, config.Search.Seed, config.VoxelSizeMm));
         }
-        return (router ?? new AStarRouter()).Route(grid.Grid, line, config);
+        return (router ?? new AStarRouter()).Route(grid.Grid, line, config, RouteConstraints.From(rules));
     }
 }

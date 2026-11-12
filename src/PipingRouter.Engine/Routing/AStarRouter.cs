@@ -6,11 +6,15 @@ namespace PipingRouter.Engine.Routing;
 /// <summary>
 /// 軸向 A*（±X、±Y、±Z 六個方向，只會有 90 度彎頭）。
 ///
-/// 搜尋狀態 = (格子, 進入此格的方向)。起點狀態的方向是起點接口方向，且第一步必須沿該方向；
+/// 搜尋狀態 = (格子, 進入此格的方向, 上次轉彎後的連續直管格數 run ∈ [1, N])。
+/// N = 兩彎頭之間的最小步數（<see cref="RouteConstraints.MinStraightCells"/>）；run 上限壓在 N，所以狀態數有界。
+/// 轉彎只在 run ≥ N 時允許；轉彎後 run = 1。起點狀態的 run = N（起點接口段不受限）；
+/// 抵達終點的判斷不看 run（最後一段是接口段，不受限）。因此約束只作用在「兩個彎頭之間」。
+/// 起點狀態的方向是起點接口方向，且第一步必須沿該方向；
 /// 抵達終點格時必須沿終點接口方向的反向（管線從終點接口外側直進）。禁止 180 度回頭。
 /// 起點格與終點格是「端點專用」：不可回到起點格，也不可穿越終點格（只能以抵達方向進入一次）。
 /// 其餘的自交（格子重複經過）無法在 (格子, 方向) 狀態空間中禁止，會以 SelfOverlap 警告標示。
-/// 第 7 步會在狀態加入「上次轉彎後的連續直管格數」與元件序列索引；現在還沒有。
+/// 元件序列索引（已放置到第幾個元件）預留在狀態裡，第一階段不使用。
 ///
 /// 成本（整數定點）= 長度權重 × 每步毫米數 + 彎頭權重 × 彎頭數 + 區域懲罰 × 進入 Penalized 格的次數。
 /// 啟發函數 = 曼哈頓距離 × 每步成本（可採納且一致）。
@@ -42,10 +46,15 @@ public sealed class AStarRouter : IRouter
         }
     }
 
-    public RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config)
+    /// <summary>沒有任何規則約束（最小直管 = 0）的便利多載。</summary>
+    public RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config) =>
+        Route(grid, line, config, RouteConstraints.None);
+
+    public RouteResult Route(VoxelGrid grid, LineRequest line, RoutingConfig config, RouteConstraints constraints)
     {
         long seed = config.Search.Seed;
-        var info0 = new RouteSearchInfo(0, seed, grid.CellSize);
+        int minRun = constraints.MinStraightCells(grid.CellSize);
+        var info0 = new RouteSearchInfo(0, seed, grid.CellSize, minRun);
         RouteResult Fail(string code, string msg, GridSnap? snap = null, long expanded = 0,
             CellIndex? closest = null, double? closestMm = null) =>
             RouteResult.Fail(line.Id, new RouteFailure(code, msg, expanded, closest, closestMm),
@@ -78,12 +87,15 @@ public sealed class AStarRouter : IRouter
         int arriveDir = (int)line.End.Direction.Opposite();       // 抵達終點時行進的方向
 
         // ---- A* ----
-        long stateCount = grid.CellCount * DirCount;
+        long stateCount = grid.CellCount * DirCount * minRun;
+        if (stateCount > int.MaxValue)
+            return Fail("GridTooLarge",
+                $"搜尋狀態數 {stateCount}（格子 × 6 方向 × 最小直管 {minRun} 格）過多；請加大格子或縮小場景。", snap);
         IStateStore store = stateCount <= MaxStatesForArrays
             ? new ArrayStateStore((int)stateCount)
             : new DictionaryStateStore();
 
-        int startState = grid.LinearIndex(startCell) * DirCount + startDir;
+        int startState = Encode(grid.LinearIndex(startCell), startDir, minRun, minRun);
         int goalLinear = grid.LinearIndex(goalCell);
         var open = new PriorityQueue<OpenItem, OpenKey>();
         long seq = 0;
@@ -113,8 +125,7 @@ public sealed class AStarRouter : IRouter
             store.Close(s);
             expanded++;
 
-            int linear = s / DirCount;
-            int d = s % DirCount;
+            Decode(s, minRun, out int linear, out int d, out int run);
             int cx = linear % grid.Nx;
             int cy = linear / grid.Nx % grid.Ny;
             int cz = linear / (grid.Nx * grid.Ny);
@@ -132,13 +143,15 @@ public sealed class AStarRouter : IRouter
             {
                 if (s == startState && nd != startDir) continue;     // 起點第一步必須沿接口方向
                 if (nd == (d ^ 1)) continue;                          // 不可 180 度回頭
+                if (nd != d && run < minRun) continue;                // 兩彎頭之間的直管還不夠長，不能轉彎
 
                 var next = new CellIndex(cx + Dx[nd], cy + Dy[nd], cz + Dz[nd]);
                 if (grid.IsBlocked(next)) continue;
                 if (next == startCell) continue;                       // 起點格是端點專用
                 if (next == goalCell && nd != arriveDir) continue;     // 終點格只能以抵達方向進入
 
-                int ns = grid.LinearIndex(next) * DirCount + nd;
+                int nrun = nd == d ? Math.Min(run + 1, minRun) : 1;
+                int ns = Encode(grid.LinearIndex(next), nd, nrun, minRun);
 
                 long cost = step;
                 if (nd != d) cost += bend;
@@ -178,9 +191,9 @@ public sealed class AStarRouter : IRouter
         var dirs = new List<int>(states.Count);
         foreach (int s in states)
         {
-            int linear = s / DirCount;
+            Decode(s, minRun, out int linear, out int dir, out _);
             cells.Add(new CellIndex(linear % grid.Nx, linear / grid.Nx % grid.Ny, linear / (grid.Nx * grid.Ny)));
-            dirs.Add(s % DirCount);
+            dirs.Add(dir);
         }
 
         // 折線：起點中心、每個轉彎的格子中心、終點中心（共線點合併）
@@ -213,6 +226,16 @@ public sealed class AStarRouter : IRouter
 
         return new RouteResult(line.Id, RouteStatus.Success, null, polyline, cells, metrics, snap,
             info0 with { Expanded = expanded }) { Warnings = warnings };
+    }
+
+    private static int Encode(int linear, int dir, int run, int minRun) => (linear * DirCount + dir) * minRun + (run - 1);
+
+    private static void Decode(int state, int minRun, out int linear, out int dir, out int run)
+    {
+        run = state % minRun + 1;
+        int rest = state / minRun;
+        dir = rest % DirCount;
+        linear = rest / DirCount;
     }
 
     private static long Scaled(double v)

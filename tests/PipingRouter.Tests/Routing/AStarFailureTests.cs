@@ -38,7 +38,7 @@ public class AStarFailureTests
         Assert.NotNull(r.Failure.ClosestCell);
         Assert.True(r.Failure.ClosestDistanceMm > 0);
         Assert.Equal(r.Failure.Expanded, r.Search.Expanded);
-        Assert.Null(ReferenceOptimum(grid, line, Config));                // 參考解也認為無解
+        Assert.Null(ReferenceOptimum(grid, line, Config, MinCells(Example, Config)));                // 參考解也認為無解
         // 起訖吸附資訊在失敗時仍保留，方便檢視器標示
         Assert.NotNull(r.Snap);
     }
@@ -151,7 +151,7 @@ public class AStarFailureTests
         Assert.True(grid.IsBlocked(new CellIndex(sc.X + 1, sc.Y, sc.Z)));
         var r = Route(scene);
         AssertFailure(r, "NoPathExists");
-        Assert.Null(ReferenceOptimum(grid, line, Config));
+        Assert.Null(ReferenceOptimum(grid, line, Config, MinCells(Example, Config)));
     }
 
     private static RouteResult LineRouterRoute(Engine.Scene.SceneModel s, Engine.Scene.LineRequest line) =>

@@ -69,7 +69,7 @@ public class AStarOracleTests
     public void MatchesDijkstra_OnRandomScenes(int seed, bool penalizeZones, int minObs, int maxObs, int minSuccess)
     {
         var rng = new Random(seed * 7919);
-        var rules = penalizeZones
+        var baseRules = penalizeZones
             ? Example with { ServiceZonePolicy = new ServiceZonePolicyConfig(ZonePolicy.Penalize, ZonePolicy.Penalize) }
             : Example;
         int success = 0, noPath = 0, skipped = 0, overlaps = 0;
@@ -78,6 +78,7 @@ public class AStarOracleTests
         for (int iter = 0; iter < cases; iter++)
         {
             var scene = RandomScene(rng, minObs, maxObs);
+            var rules = baseRules with { MinStraightBetweenBendsMm = new[] { 0.0, 100, 200, 250, 300, 450 }[rng.Next(6)] };
             var cfg = Config with
             {
                 Weights = new RoutingWeights(
@@ -93,7 +94,7 @@ public class AStarOracleTests
 
             var grid = GridFor(scene2, line, cfg, rules);
             var r = LineRouter.Route(scene2, line, rules, cfg);
-            long? best = ReferenceOptimum(grid, line, cfg);
+            long? best = ReferenceOptimum(grid, line, cfg, MinCells(rules, cfg));
 
             if (r.Success)
             {
