@@ -41,6 +41,12 @@ ArchitectureTests 會檢查這些約束。
   每項輸出含 IsViolation／Location／Measured／Limit，並附各規則「最緊」那筆的通過紀錄。
   流向 = 折線第一點到最後一點；直管段必須是純直管（被彎頭、其他元件本體、管線端點截斷）；
   手輪淨空區不與該元件自己的管線比較。
+- 體素化（Routing/Voxelizer，保守式）：格子方塊到障礙物的精確距離 < 管半徑＋保溫＋最小淨距 才標為佔用
+  （剛好等於算自由）；因此「相鄰自由格中心連線」必定通過精確淨距檢查。格子原點在場景範圍最小角，
+  節點取格子中心，中心在場景範圍外的格子標 OutsideBounds。格子過大回報 GridTooLarge，不丟例外。
+  維修／操作區：策略 Forbid → 標為不可通過、預設不額外膨脹管半徑（ZoneInflation.None，
+  管半徑 > 半格時管表面可能侵入區域，由規則檢查器的 ServiceZoneIntrusion 抓出；可改 PipeRadius）；
+  策略 Penalize → 只標 Penalized，供成本函數使用。
 - 形狀重疊（Geometry/ShapeOverlap）的語意：兩形狀各內縮 eps 後做閉集合相交，貼合不算重疊。
 
 ## 驗證（改完必跑，通過才算完成）
