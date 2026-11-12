@@ -1,0 +1,30 @@
+{
+  "schemaVersion": 1,
+  "name": "s01 空場景 同軸直線（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [6000, 4000, 3000]
+  },
+  "obstacles": [],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 114.3,
+      "insulationThicknessMm": 0,
+      "start": {
+        "position": [500, 2000, 1200],
+        "direction": "+X"
+      },
+      "end": {
+        "position": [5500, 2000, 1200],
+        "direction": "-X"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

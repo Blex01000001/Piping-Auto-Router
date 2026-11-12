@@ -1,0 +1,70 @@
+{
+  "schemaVersion": 1,
+  "name": "s03 牆擋在中間需繞過（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 0,
+  "bounds": {
+    "min": [0, 0, 0],
+    "max": [8000, 6000, 4000]
+  },
+  "obstacles": [
+    {
+      "id": "WALL-01",
+      "kind": "wall",
+      "shape": {
+        "type": "box",
+        "min": [3900, 0, 0],
+        "max": [4100, 4000, 4000]
+      }
+    },
+    {
+      "id": "V-101",
+      "kind": "vessel",
+      "shape": {
+        "type": "cylinder",
+        "baseCenter": [5500, 4500, 0],
+        "radius": 800,
+        "height": 3500,
+        "axis": "Z"
+      }
+    },
+    {
+      "id": "EQ-01",
+      "kind": "equipment",
+      "shape": {
+        "type": "box",
+        "min": [2000, 3000, 0],
+        "max": [3000, 4000, 1500]
+      }
+    }
+  ],
+  "serviceZones": [
+    {
+      "id": "MZ-01",
+      "kind": "maintenance",
+      "shape": {
+        "type": "box",
+        "min": [1500, 500, 0],
+        "max": [2500, 1500, 2500]
+      }
+    }
+  ],
+  "lines": [
+    {
+      "id": "L-001",
+      "outerDiameterMm": 114.3,
+      "insulationThicknessMm": 50,
+      "start": {
+        "position": [1000, 2000, 1500],
+        "direction": "+X"
+      },
+      "end": {
+        "position": [7000, 2000, 1500],
+        "direction": "-X"
+      },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

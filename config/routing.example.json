@@ -1,0 +1,15 @@
+{
+  "schemaVersion": 1,
+  "voxelSizeMm": 100,
+  "weights": {
+    "length": 1,
+    "bend": 50,
+    "zonePenaltyPerCell": 20
+  },
+  "directions": "axis6",
+  "search": {
+    "maxExpandedNodes": 5000000,
+    "seed": 0
+  },
+  "diagnoseOnFailure": true
+}

@@ -1,0 +1,84 @@
+{
+  "schemaVersion": 1,
+  "profile": "EXAMPLE",
+  "disclaimer": "所有數值皆為示範用假設值，非任何規範或設計依據",
+  "geometry": {
+    "epsilonMm": 1E-06
+  },
+  "clearance": {
+    "pipeToObstacleMinMm": 100,
+    "pipeToPipeMinMm": 100
+  },
+  "straightRun": {
+    "minBetweenBendsMm": 300
+  },
+  "serviceZonePolicy": {
+    "maintenance": "forbid",
+    "operation": "forbid"
+  },
+  "severities": {
+    "Collision": "error",
+    "ControlValveStraightRun": "error",
+    "FlowMeterStraightRun": "error",
+    "HandwheelClearance": "error",
+    "HandwheelHeight": "error",
+    "MinClearance": "error",
+    "MinStraightBetweenBends": "error",
+    "ServiceZoneIntrusion": "error",
+    "UnsupportedComponent": "warning"
+  },
+  "componentTypes": {
+    "checkValve": {
+      "size": {
+        "lengthMm": 250,
+        "widthMm": 150,
+        "heightMm": 150
+      },
+      "straightRunInDiameters": {
+        "upstream": 0,
+        "downstream": 0
+      }
+    },
+    "controlValve": {
+      "size": {
+        "lengthMm": 500,
+        "widthMm": 250,
+        "heightMm": 400
+      },
+      "straightRunInDiameters": {
+        "upstream": 2,
+        "downstream": 3
+      }
+    },
+    "flowMeter": {
+      "size": {
+        "lengthMm": 400,
+        "widthMm": 150,
+        "heightMm": 150
+      },
+      "straightRunInDiameters": {
+        "upstream": 10,
+        "downstream": 5
+      }
+    },
+    "handValve": {
+      "size": {
+        "lengthMm": 300,
+        "widthMm": 200,
+        "heightMm": 200
+      },
+      "handwheel": {
+        "heightAboveFloorMm": {
+          "min": 900,
+          "max": 1500
+        },
+        "centerOffsetFromAxisMm": [0, 0, 250],
+        "clearanceZone": {
+          "type": "cylinder",
+          "radiusMm": 300,
+          "heightMm": 200
+        }
+      }
+    }
+  }
+}
