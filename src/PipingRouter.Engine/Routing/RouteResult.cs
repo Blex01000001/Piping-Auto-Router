@@ -1,4 +1,5 @@
 using PipingRouter.Engine.Geometry;
+using PipingRouter.Engine.Rules;
 
 namespace PipingRouter.Engine.Routing;
 
@@ -109,6 +110,12 @@ public sealed record RouteResult(
     public bool Success => Status == RouteStatus.Success;
 
     public IReadOnlyList<RouteWarning> Warnings { get; init; } = Array.Empty<RouteWarning>();
+
+    /// <summary>
+    /// 這條管線在連續座標下的規則檢查報告（對障礙物、維修區、最小直管等做精確檢查；見 <see cref="RouteResultExtensions.WithRuleReport"/>）。
+    /// 佈線本身不會填它；失敗的結果沒有。
+    /// </summary>
+    public RuleReport? RuleReport { get; init; }
 
     public static RouteResult Fail(string lineId, RouteFailure failure, RouteSearchInfo search, GridSnap? snap = null) =>
         new(lineId, RouteStatus.NoPath, failure, Array.Empty<Vec3>(), Array.Empty<CellIndex>(), null, snap, search);

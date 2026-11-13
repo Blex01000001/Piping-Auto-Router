@@ -3,14 +3,15 @@ using Xunit;
 namespace PipingRouter.Tests.Routing;
 
 /// <summary>
-/// Golden 檔：把佈線結果的 JSON 鎖在 tests/PipingRouter.Tests/Golden/ 底下，任何排序、成本或格式的變動都會被抓到。
+/// Golden 檔：把佈線結果的 JSON 鎖在 samples/results/ 底下，任何排序、成本或格式的變動都會被抓到。
+/// 這些檔案同時是給 Dashboard 開發用的範例輸出（檔名後綴：.route.json／.plan.json／.rules.json）。
 /// 有意改變輸出格式或演算法時，以環境變數 UPDATE_GOLDEN=1 重新產生，並檢視 git diff 後再提交。
 /// </summary>
 internal static class GoldenFiles
 {
     public static void Match(string name, string actual)
     {
-        string path = RepoPaths.Combine("tests", "PipingRouter.Tests", "Golden", name);
+        string path = RepoPaths.Combine("samples", "results", name);
         if (Environment.GetEnvironmentVariable("UPDATE_GOLDEN") == "1")
         {
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);

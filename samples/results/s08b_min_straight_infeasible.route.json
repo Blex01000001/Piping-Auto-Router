@@ -67,5 +67,6 @@
     "seed": 0,
     "voxelSizeMm": 100,
     "minStraightCells": 3
-  }
+  },
+  "ruleReport": null
 }

@@ -1,0 +1,499 @@
+{
+  "schemaVersion": 1,
+  "errorCount": 6,
+  "warningCount": 0,
+  "results": [
+    {
+      "ruleId": "Collision",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-OK",
+        "V-101"
+      ],
+      "location": [5500, 1999.999985, 1200],
+      "measured": 850,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-OK 與障礙物無干涉（最近為 V-101，間隙 850 mm）"
+    },
+    {
+      "ruleId": "MinClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-OK",
+        "V-101"
+      ],
+      "location": [5500, 1999.999985, 1200],
+      "measured": 850,
+      "limit": {
+        "min": 100,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-OK 淨距符合（最緊為 V-101，850 mm ≥ 100 mm）"
+    },
+    {
+      "ruleId": "ServiceZoneIntrusion",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-OK",
+        "MZ-01"
+      ],
+      "location": [5500, 3000, 1200],
+      "measured": 3590.054945,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-OK 未穿越維修／操作區（最近為 MZ-01，間隙 3590.055 mm）"
+    },
+    {
+      "ruleId": "HandwheelHeight",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-OK",
+        "HV-OK"
+      ],
+      "location": [2500, 1000, 1450],
+      "measured": 1450,
+      "limit": {
+        "min": 900,
+        "max": 1500
+      },
+      "unit": "mm",
+      "message": "元件 HV-OK 手輪中心離地 1450 mm，在範圍 900–1500 mm 內"
+    },
+    {
+      "ruleId": "HandwheelClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-OK",
+        "HV-OK"
+      ],
+      "location": [2500, 1000, 1450],
+      "measured": 0,
+      "limit": {
+        "min": null,
+        "max": 0
+      },
+      "unit": "個",
+      "message": "元件 HV-OK 手輪淨空區內無侵入物件"
+    },
+    {
+      "ruleId": "Collision",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-HEIGHT",
+        "EQ-01"
+      ],
+      "location": [1500, 2000, 1400],
+      "measured": 1590,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-HEIGHT 與障礙物無干涉（最近為 EQ-01，間隙 1590 mm）"
+    },
+    {
+      "ruleId": "MinClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-HEIGHT",
+        "EQ-01"
+      ],
+      "location": [1500, 2000, 1400],
+      "measured": 1590,
+      "limit": {
+        "min": 100,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-HEIGHT 淨距符合（最緊為 EQ-01，1590 mm ≥ 100 mm）"
+    },
+    {
+      "ruleId": "ServiceZoneIntrusion",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-HEIGHT",
+        "MZ-01"
+      ],
+      "location": [3500, 2000, 1400],
+      "measured": 5802.349955,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-HEIGHT 未穿越維修／操作區（最近為 MZ-01，間隙 5802.35 mm）"
+    },
+    {
+      "ruleId": "HandwheelHeight",
+      "isViolation": true,
+      "severity": "error",
+      "objectIds": [
+        "P-HEIGHT",
+        "HV-HI"
+      ],
+      "location": [2000, 2000, 1650],
+      "measured": 1650,
+      "limit": {
+        "min": 900,
+        "max": 1500
+      },
+      "unit": "mm",
+      "message": "元件 HV-HI 手輪中心離地 1650 mm，超出範圍 900–1500 mm"
+    },
+    {
+      "ruleId": "HandwheelClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-HEIGHT",
+        "HV-HI"
+      ],
+      "location": [2000, 2000, 1650],
+      "measured": 0,
+      "limit": {
+        "min": null,
+        "max": 0
+      },
+      "unit": "個",
+      "message": "元件 HV-HI 手輪淨空區內無侵入物件"
+    },
+    {
+      "ruleId": "MinClearance",
+      "isViolation": true,
+      "severity": "error",
+      "objectIds": [
+        "P-CLEAR",
+        "EQ-01"
+      ],
+      "location": [1500, 3500, 1000],
+      "measured": 90,
+      "limit": {
+        "min": 100,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-CLEAR 與 EQ-01 的淨距 90 mm，小於最小淨距 100 mm"
+    },
+    {
+      "ruleId": "Collision",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-CLEAR",
+        "EQ-01"
+      ],
+      "location": [1500, 3500, 1000],
+      "measured": 90,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-CLEAR 與障礙物無干涉（最近為 EQ-01，間隙 90 mm）"
+    },
+    {
+      "ruleId": "ServiceZoneIntrusion",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-CLEAR",
+        "MZ-01"
+      ],
+      "location": [4000, 3500, 1000],
+      "measured": 4974.937811,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-CLEAR 未穿越維修／操作區（最近為 MZ-01，間隙 4974.938 mm）"
+    },
+    {
+      "ruleId": "Collision",
+      "isViolation": true,
+      "severity": "error",
+      "objectIds": [
+        "P-COLLIDE",
+        "V-101"
+      ],
+      "location": [6400, 2000, 1000],
+      "measured": -50,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-COLLIDE 與 V-101 干涉（間隙 -50 mm，負值為穿透；穿透深度僅為估計）"
+    },
+    {
+      "ruleId": "ServiceZoneIntrusion",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-COLLIDE",
+        "MZ-01"
+      ],
+      "location": [8000, 2000, 1000],
+      "measured": 2186.067977,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-COLLIDE 未穿越維修／操作區（最近為 MZ-01，間隙 2186.068 mm）"
+    },
+    {
+      "ruleId": "Collision",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-ZONE",
+        "V-101"
+      ],
+      "location": [8500, 4500, 1000],
+      "measured": 2265.475947,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-ZONE 與障礙物無干涉（最近為 V-101，間隙 2265.476 mm）"
+    },
+    {
+      "ruleId": "MinClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-ZONE",
+        "V-101"
+      ],
+      "location": [8500, 4500, 1000],
+      "measured": 2265.475947,
+      "limit": {
+        "min": 100,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-ZONE 淨距符合（最緊為 V-101，2265.476 mm ≥ 100 mm）"
+    },
+    {
+      "ruleId": "ServiceZoneIntrusion",
+      "isViolation": true,
+      "severity": "error",
+      "objectIds": [
+        "P-ZONE",
+        "MZ-01"
+      ],
+      "location": [9000, 4500, 1000],
+      "measured": -50,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-ZONE 穿越維修區 MZ-01（間隙 -50 mm，負值為侵入）"
+    },
+    {
+      "ruleId": "Collision",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-BENDS",
+        "EQ-01"
+      ],
+      "location": [1500, 6000, 1000],
+      "measured": 1450,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-BENDS 與障礙物無干涉（最近為 EQ-01，間隙 1450 mm）"
+    },
+    {
+      "ruleId": "MinClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-BENDS",
+        "EQ-01"
+      ],
+      "location": [1500, 6000, 1000],
+      "measured": 1450,
+      "limit": {
+        "min": 100,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-BENDS 淨距符合（最緊為 EQ-01，1450 mm ≥ 100 mm）"
+    },
+    {
+      "ruleId": "ServiceZoneIntrusion",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-BENDS",
+        "MZ-01"
+      ],
+      "location": [2500, 6200, 1000],
+      "measured": 6559.841148,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-BENDS 未穿越維修／操作區（最近為 MZ-01，間隙 6559.841 mm）"
+    },
+    {
+      "ruleId": "MinStraightBetweenBends",
+      "isViolation": true,
+      "severity": "error",
+      "objectIds": [
+        "P-BENDS"
+      ],
+      "location": [1500, 6100, 1000],
+      "measured": 200,
+      "limit": {
+        "min": 300,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-BENDS 第 1 與第 2 個彎頭之間直管 200 mm，小於最小 300 mm"
+    },
+    {
+      "ruleId": "Collision",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-FLOW",
+        "EQ-01"
+      ],
+      "location": [1500, 7000, 1500],
+      "measured": 2450,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-FLOW 與障礙物無干涉（最近為 EQ-01，間隙 2450 mm）"
+    },
+    {
+      "ruleId": "MinClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-FLOW",
+        "EQ-01"
+      ],
+      "location": [1500, 7000, 1500],
+      "measured": 2450,
+      "limit": {
+        "min": 100,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-FLOW 淨距符合（最緊為 EQ-01，2450 mm ≥ 100 mm）"
+    },
+    {
+      "ruleId": "ServiceZoneIntrusion",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-FLOW",
+        "MZ-01"
+      ],
+      "location": [3500, 7000, 1500],
+      "measured": 5802.349955,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線 P-FLOW 未穿越維修／操作區（最近為 MZ-01，間隙 5802.35 mm）"
+    },
+    {
+      "ruleId": "FlowMeterStraightRun",
+      "isViolation": true,
+      "severity": "error",
+      "objectIds": [
+        "P-FLOW",
+        "FM-1"
+      ],
+      "location": [800, 7000, 1500],
+      "measured": 600,
+      "limit": {
+        "min": 1000,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "元件 FM-1（flowMeter）上游直管段 600 mm，需要 ≥ 1000 mm（10D，D=100）"
+    },
+    {
+      "ruleId": "FlowMeterStraightRun",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-FLOW",
+        "FM-1"
+      ],
+      "location": [2500, 7000, 1500],
+      "measured": 2000,
+      "limit": {
+        "min": 500,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "元件 FM-1（flowMeter）下游直管段符合：2000 mm ≥ 500 mm（5D）"
+    },
+    {
+      "ruleId": "Collision",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-OK",
+        "P-COLLIDE"
+      ],
+      "location": [5750, 2000, 1100],
+      "measured": 438.516481,
+      "limit": {
+        "min": 0,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線之間無干涉（最近為 P-OK 與 P-COLLIDE，間隙 438.516 mm）"
+    },
+    {
+      "ruleId": "MinClearance",
+      "isViolation": false,
+      "severity": "error",
+      "objectIds": [
+        "P-OK",
+        "P-COLLIDE"
+      ],
+      "location": [5750, 2000, 1100],
+      "measured": 438.516481,
+      "limit": {
+        "min": 100,
+        "max": null
+      },
+      "unit": "mm",
+      "message": "管線之間淨距符合（最緊 438.516 mm ≥ 100 mm）"
+    }
+  ]
+}

@@ -85,5 +85,10 @@
     "seed": 0,
     "voxelSizeMm": 100,
     "minStraightCells": 3
+  },
+  "ruleReport": {
+    "errorCount": 0,
+    "warningCount": 0,
+    "results": []
   }
 }

@@ -6,7 +6,8 @@ namespace PipingRouter.Engine.Io;
 /// <summary>
 /// 佈線結果的 JSON 讀寫。輸出是確定的（欄位順序固定、數字用最短可還原格式、不含耗時），
 /// 同一輸入兩次佈線的輸出逐位元相同；Dashboard 也讀這個格式。
-/// 欄位：schemaVersion、lineId、status、failure（含 diagnosis）、polyline、cells、metrics、gridSnap、warnings、search。
+/// 欄位：schemaVersion、lineId、status、failure（含 diagnosis）、polyline、cells、metrics、gridSnap、warnings、search、
+/// ruleReport（選填；null 表示沒有做規則檢查或佈線失敗；舊檔沒有這個欄位也能讀，schemaVersion 維持 1）。
 /// 成本是 ×1000 定點整數（見 <see cref="CostUnits.Scale"/>）。
 /// </summary>
 public static class RouteResultJson
@@ -26,10 +27,14 @@ public static class RouteResultJson
     // =====================================================================
     // 寫出
     // =====================================================================
-    public static string Serialize(RouteResult r)
+    public static string Serialize(RouteResult r) => JsonOut.Write(ToObj(r, withSchemaVersion: true));
+
+    /// <summary>withSchemaVersion = false 用於內嵌在整體計畫（<see cref="PlanJson"/>）裡的結果。</summary>
+    internal static JObj ToObj(RouteResult r, bool withSchemaVersion)
     {
-        var root = new JObj()
-            .Add("schemaVersion", CurrentSchemaVersion)
+        var root = new JObj();
+        if (withSchemaVersion) root.Add("schemaVersion", CurrentSchemaVersion);
+        return root
             .Add("lineId", r.LineId)
             .Add("status", r.Status == RouteStatus.Success ? "Success" : "NoPath")
             .Add("failure", r.Failure == null ? null : FailureObj(r.Failure))
@@ -55,8 +60,8 @@ public static class RouteResultJson
                 .Add("expanded", r.Search.Expanded)
                 .Add("seed", r.Search.Seed)
                 .Add("voxelSizeMm", r.Search.VoxelSizeMm)
-                .Add("minStraightCells", r.Search.MinStraightCells));
-        return JsonOut.Write(root);
+                .Add("minStraightCells", r.Search.MinStraightCells))
+            .Add("ruleReport", r.RuleReport == null ? null : RuleReportJson.ToObj(r.RuleReport));
     }
 
     private static JObj FailureObj(RouteFailure f)
@@ -92,11 +97,18 @@ public static class RouteResultJson
     // =====================================================================
     // 讀入
     // =====================================================================
-    private static RouteResult? Read(JsonObj root, IssueList issues)
+    private static RouteResult? Read(JsonObj root, IssueList issues) => ReadCore(root, issues, topLevel: true);
+
+    internal static RouteResult? ReadEmbedded(JsonObj root, IssueList issues) => ReadCore(root, issues, topLevel: false);
+
+    private static RouteResult? ReadCore(JsonObj root, IssueList issues, bool topLevel)
     {
-        int version = root.ReqInt("schemaVersion");
-        if (root.Has("schemaVersion") && version != CurrentSchemaVersion)
-            root.Error("schemaVersion", "UnsupportedSchemaVersion", $"不支援的 schemaVersion {version}（目前支援 {CurrentSchemaVersion}）");
+        if (topLevel)
+        {
+            int version = root.ReqInt("schemaVersion");
+            if (root.Has("schemaVersion") && version != CurrentSchemaVersion)
+                root.Error("schemaVersion", "UnsupportedSchemaVersion", $"不支援的 schemaVersion {version}（目前支援 {CurrentSchemaVersion}）");
+        }
 
         string lineId = root.ReqStr("lineId");
         var status = root.ReqEnum("status", Statuses);
@@ -145,6 +157,10 @@ public static class RouteResultJson
         if (sr != null)
             search = new RouteSearchInfo(sr.ReqLong("expanded"), sr.ReqLong("seed"), sr.ReqNum("voxelSizeMm"), sr.ReqInt("minStraightCells"));
 
+        Engine.Rules.RuleReport? ruleReport = null;
+        var rr = root.Obj("ruleReport", false);
+        if (rr != null) ruleReport = RuleReportJson.ReadReport(rr);
+
         // ---- 一致性 ----
         if (status == RouteStatus.Success)
         {
@@ -158,9 +174,14 @@ public static class RouteResultJson
             if (failure == null) root.Error("failure", "MissingField", "status 為 NoPath 時必須有 failure");
             if (polyline.Count > 0) root.Error("polyline", "InvalidValue", "status 為 NoPath 時折線必須為空");
             if (metrics != null) root.Error("metrics", "InvalidValue", "status 為 NoPath 時不應有 metrics");
+            if (ruleReport != null) root.Error("ruleReport", "InvalidValue", "status 為 NoPath 時不應有 ruleReport（沒有折線可檢查）");
         }
 
-        return new RouteResult(lineId, status, failure, polyline, cells, metrics, snap, search) { Warnings = warnings };
+        return new RouteResult(lineId, status, failure, polyline, cells, metrics, snap, search)
+        {
+            Warnings = warnings,
+            RuleReport = ruleReport,
+        };
     }
 
     private static RouteFailure ReadFailure(JsonObj o)

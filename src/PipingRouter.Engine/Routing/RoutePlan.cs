@@ -1,3 +1,5 @@
+using PipingRouter.Engine.Rules;
+
 namespace PipingRouter.Engine.Routing;
 
 /// <summary>
@@ -12,6 +14,12 @@ public sealed record PlanEvaluation(
     long RouteCost,
     long PenaltyCost)
 {
+    /// <summary>
+    /// 整體計畫的規則檢查報告（所有成功管線一起檢查：對障礙物、維修區、最小直管，加上管對管淨距與干涉）。
+    /// 評估順序時不會計算（省時間）；需要時用 <see cref="RoutePlanner.AttachRuleReport"/> 補上。
+    /// </summary>
+    public RuleReport? RuleReport { get; init; }
+
     public long Score => RouteCost + PenaltyCost;
 
     public bool AllSucceeded => FailedCount == 0;

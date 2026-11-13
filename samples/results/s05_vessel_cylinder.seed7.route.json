@@ -124,5 +124,61 @@
     "seed": 7,
     "voxelSizeMm": 100,
     "minStraightCells": 3
+  },
+  "ruleReport": {
+    "errorCount": 0,
+    "warningCount": 0,
+    "results": [
+      {
+        "ruleId": "Collision",
+        "isViolation": false,
+        "severity": "error",
+        "objectIds": [
+          "L-001",
+          "V-101"
+        ],
+        "location": [3999.999992, 2850, 1050],
+        "measured": 200,
+        "limit": {
+          "min": 0,
+          "max": null
+        },
+        "unit": "mm",
+        "message": "管線 L-001 與障礙物無干涉（最近為 V-101，間隙 200 mm）"
+      },
+      {
+        "ruleId": "MinClearance",
+        "isViolation": false,
+        "severity": "error",
+        "objectIds": [
+          "L-001",
+          "V-101"
+        ],
+        "location": [3999.999992, 2850, 1050],
+        "measured": 200,
+        "limit": {
+          "min": 100,
+          "max": null
+        },
+        "unit": "mm",
+        "message": "管線 L-001 淨距符合（最緊為 V-101，200 mm ≥ 100 mm）"
+      },
+      {
+        "ruleId": "MinStraightBetweenBends",
+        "isViolation": false,
+        "severity": "error",
+        "objectIds": [
+          "L-001"
+        ],
+        "location": [3050, 2450, 1050],
+        "measured": 800,
+        "limit": {
+          "min": 300,
+          "max": null
+        },
+        "unit": "mm",
+        "message": "管線 L-001 彎頭間直管符合（最短 800 mm ≥ 300 mm）"
+      }
+    ]
   }
 }

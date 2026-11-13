@@ -51,6 +51,16 @@ public static class LineRouter
         return result;
     }
 
+    /// <summary>佈線後立刻做規則檢查，報告掛在結果上（失敗的結果沒有報告）。</summary>
+    public static RouteResult RouteAndCheck(
+        SceneModel scene,
+        LineRequest line,
+        RuleConfig rules,
+        RoutingConfig config,
+        VoxelizeOptions? options = null,
+        IRouter? router = null) =>
+        Route(scene, line, rules, config, options, router).WithRuleReport(scene, line, rules);
+
     /// <summary>
     /// 同成本的備選方案：以 config 的種子為起點，依序換種子（種子 + 1、+ 2…）重跑，依路徑去重，最多嘗試 maxSeeds 個種子，
     /// 湊滿 count 條即停。格子只建一次。種子只影響等成本路徑之間的選擇，所以每條備選的成本都相同、都合法。

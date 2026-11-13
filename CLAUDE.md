@@ -26,6 +26,8 @@ ArchitectureTests 會檢查這些約束。
 - `config/rules.example.json`    規則數值（範例）
 - `config/routing.example.json`  體素大小、權重、搜尋上限
 - `samples/scenes/*.json`        假場景
+- `samples/results/*.json`       範例輸出（給 Dashboard 開發直接讀取，同時是 golden 檔）：`*.route.json` 單條佈線結果、
+  `*.plan.json`／`*.plan-failing.json` 多條管線整體結果、`*.rules.json` 人工管線的規則報告
 
 ## 約定
 - 單位 mm，Z 向上，地面 Z = floorZ。管徑一律指外徑；淨距從保溫外表面算起。
@@ -65,8 +67,14 @@ ArchitectureTests 會檢查這些約束。
   注意：保守式體素化可能比精確幾何多擋（例如縫隙差 1 mm），這種假性無解會由 Clearance 放寬後有解顯示出來（s12b）。
 - 佈線結果的 JSON（Io/RouteResultJson，讀寫皆有）：欄位順序固定、數字用最短可還原格式、不含任何耗時，
   所以同一輸入兩次佈線的輸出逐位元相同；成本是 ×1000 定點整數。Dashboard 讀的就是這個格式。
-  確定性測試涵蓋：每個樣本場景連跑兩次、與執行順序無關、多執行緒平行、golden 檔（tests/PipingRouter.Tests/Golden/*.route.json）。
+  確定性測試涵蓋：每個樣本場景連跑兩次、與執行順序無關、多執行緒平行、golden 檔（samples/results/*.json）。
   有意改變輸出格式或演算法結果時，用 `UPDATE_GOLDEN=1 dotnet test --filter Golden_` 重新產生，**務必檢視 git diff 再提交**。
+  結果可內嵌規則報告：`ruleReport`（選填；LineRouter.RouteAndCheck 或 RouteResult.WithRuleReport 產生，失敗的結果沒有）。
+  只檢查這一條管線對障礙物／維修區／最小直管，不含 scene.Pipes（佈線也沒把它們當障礙）。
+  規則報告 JSON（Io/RuleReportJson，讀寫皆有）完整保留每筆檢查結果的所有欄位並附 errorCount／warningCount；
+  量測值、限值、位置輸出時四捨五入到 1e-6 mm（避免精確公式的 1e-12 雜訊進檔案），輸出解析後再輸出逐位元相同。
+  多條管線整體結果的 JSON（Io/PlanJson）：order／failedCount／routeCost／penaltyCost／score／results（依場景順序，內嵌佈線結果）／
+  ruleReport（RoutePlanner.AttachRuleReport 產生，含管對管檢查）。讀入時檢查一致性（計數、成本總和、score、order 為排列）。
 - 備選方案（LineRouter.RouteAlternatives）：換種子（config 種子 + 1、+ 2…）重跑並依路徑去重；每條成本相同、都合法；
   路徑只有一種時會少於要求的條數。
 - 多條管線（Routing/RoutePlanner，預留給 MCTS／遺傳演算法／模擬退火）：依「佈線順序」逐條佈線；每條管線從乾淨的基底格子
@@ -89,5 +97,7 @@ ArchitectureTests 會檢查這些約束。
 雲端容器需先 `apt-get update && apt-get install -y dotnet-sdk-8.0`（容器回收後要重裝）。
 
 ## 範圍
-目前為第一階段（進行到第 10 步：軸向 A* 含彎頭成本、最小直管長度、失敗診斷、確定性與結果 JSON、多條管線順序評估介面，尚未含元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
-架構已預留位置，但尚未實作。
+第一階段（Engine + Tests）已完成：幾何、場景／設定 JSON、精確規則檢查、保守式體素化、單條管線軸向 A*
+（彎頭成本、最小直管長度、失敗診斷、確定性與種子）、結果／規則報告／整體計畫 JSON、多條管線順序評估介面。
+後續階段（架構已預留位置，尚未實作）：元件序列（逆止閥 → 手閥 → 流量計…，StateLayout 的 comp 維度）、
+Dashboard 與 3D 檢視器（Three.js）、MCTS／遺傳演算法／模擬退火的順序策略、45 度彎頭（DirectionSet）。

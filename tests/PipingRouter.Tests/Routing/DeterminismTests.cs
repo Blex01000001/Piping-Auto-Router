@@ -11,8 +11,12 @@ namespace PipingRouter.Tests.Routing;
 /// <summary>同一輸入必須得到逐位元相同的結果；與執行順序、執行緒、先前跑過什麼無關。</summary>
 public class DeterminismTests
 {
-    private static string Run(string scene, int line = 0, RoutingConfig? config = null) =>
-        RouteResultJson.Serialize(Route(LoadScene(scene), line, config));
+    // 輸出 = 佈線結果 + 規則檢查報告（成功時）：兩者都必須是確定的
+    private static string Run(string scene, int line = 0, RoutingConfig? config = null)
+    {
+        var s = LoadScene(scene);
+        return RouteResultJson.Serialize(LineRouter.RouteAndCheck(s, s.Lines[line], Example, config ?? Config));
+    }
 
     // 兩個很重的場景（s09 要跑 5 次搜尋做診斷、s14 繞很遠）用較粗的格子，其餘用範例設定
     private static RoutingConfig Cfg(string scene) =>
@@ -42,7 +46,7 @@ public class DeterminismTests
     [Fact]
     public void S09_HeavyFailureWithDiagnosis_IsByteIdentical()
     {
-        string cached = RouteResultJson.Serialize(Cached("s09_enclosed_nopath"));
+        string cached = RouteResultJson.Serialize(Cached("s09_enclosed_nopath").WithRuleReport(LoadScene("s09_enclosed_nopath"), LoadScene("s09_enclosed_nopath").Lines[0], Example));
         Assert.Equal(cached, Run("s09_enclosed_nopath"));
     }
 
@@ -103,15 +107,5 @@ public class DeterminismTests
     {
         var cfg = Config with { Search = Config.Search with { Seed = 7 } };
         GoldenFiles.Match("s05_vessel_cylinder.seed7.route.json", Run("s05_vessel_cylinder", 0, cfg));
-    }
-
-    [Fact]
-    public void Golden_FilesAreStrictJson_AndParseBack()
-    {
-        foreach (var f in Directory.EnumerateFiles(RepoPaths.Combine("tests", "PipingRouter.Tests", "Golden"), "*.route.json"))
-        {
-            var r = RouteResultJson.Load(f);
-            Assert.True(r.Ok, f + "\n" + string.Join("\n", r.Issues));
-        }
     }
 }

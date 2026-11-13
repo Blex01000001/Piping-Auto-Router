@@ -3,6 +3,7 @@ using PipingRouter.Engine;
 using PipingRouter.Engine.Geometry;
 using PipingRouter.Engine.Io;
 using PipingRouter.Engine.Routing;
+using PipingRouter.Engine.Rules;
 using Xunit;
 using static PipingRouter.Tests.Io.IssueAssert;
 using static PipingRouter.Tests.Routing.RouteTestKit;
@@ -120,6 +121,81 @@ public class RouteResultJsonTests
         {
             if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
         }
+    }
+
+    // ------------------------------------------------------------ 規則報告
+    private static string Checked(string scene, int line = 0)
+    {
+        var s = LoadScene(scene);
+        return RouteResultJson.Serialize(LineRouter.RouteAndCheck(s, s.Lines[line], PipingRouter.Tests.Rules.RuleTestKit.Example, Config));
+    }
+
+    [Fact]
+    public void RuleReport_IsEmbedded_ForSuccessfulRoutes()
+    {
+        using var doc = JsonDocument.Parse(Checked("s05_vessel_cylinder"));
+        var rr = doc.RootElement.GetProperty("ruleReport");
+        Assert.Equal(0, rr.GetProperty("errorCount").GetInt32());
+        Assert.Equal(0, rr.GetProperty("warningCount").GetInt32());
+        var ids = rr.GetProperty("results").EnumerateArray().Select(x => x.GetProperty("ruleId").GetString()).ToHashSet();
+        Assert.Contains("Collision", ids);               // 有障礙物 → 有干涉與淨距的通過紀錄
+        Assert.Contains("MinClearance", ids);
+        Assert.Contains("MinStraightBetweenBends", ids); // 4 個彎頭 → 有彎頭間直管的通過紀錄
+        Assert.All(rr.GetProperty("results").EnumerateArray(), x => Assert.False(x.GetProperty("isViolation").GetBoolean()));
+    }
+
+    [Fact]
+    public void RuleReport_IsNull_WhenNotCheckedOrWhenRoutingFailed()
+    {
+        using (var doc = JsonDocument.Parse(Json("s02_open_one_bend")))
+            Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("ruleReport").ValueKind);   // 沒有要求檢查
+        using (var doc = JsonDocument.Parse(Checked("s08b_min_straight_infeasible")))
+            Assert.Equal(JsonValueKind.Null, doc.RootElement.GetProperty("ruleReport").ValueKind);   // 失敗：沒有折線可檢查
+    }
+
+    [Fact]
+    public void RuleReport_RoundTrips_WithTheRoute()
+    {
+        string t1 = Checked("s07_service_zone");
+        var back = RouteResultJson.Parse(t1);
+        NoIssues(back);
+        Assert.NotNull(back.Value!.RuleReport);
+        Assert.Equal(t1, RouteResultJson.Serialize(back.Value));
+    }
+
+    [Fact]
+    public void OldFilesWithoutARuleReportField_StillParse()
+    {
+        // 舊版輸出沒有 ruleReport 欄位（schemaVersion 同為 1）：照樣能讀，視為沒有報告
+        string old = Json("s02_open_one_bend").Replace(",\n  \"ruleReport\": null", "");
+        Assert.DoesNotContain("ruleReport", old);
+        var r = RouteResultJson.Parse(old);
+        NoIssues(r);
+        Assert.Null(r.Value!.RuleReport);
+    }
+
+    [Fact]
+    public void NoPathWithARuleReport_IsRejected()
+    {
+        string failed = Json("s08b_min_straight_infeasible");
+        string withReport = Mutate(failed, "\"ruleReport\": null", "\"ruleReport\": { \"errorCount\": 0, \"warningCount\": 0, \"results\": [] }");
+        HasError(RouteResultJson.Parse(withReport), "InvalidValue", "ruleReport");
+    }
+
+    [Fact]
+    public void WithRuleReport_LeavesFailuresUntouched_AndOnlyChecksTheRoutedPipe()
+    {
+        var s = LoadScene("s08b_min_straight_infeasible");
+        var failed = Route(s);
+        Assert.Same(failed, failed.WithRuleReport(s, s.Lines[0], PipingRouter.Tests.Rules.RuleTestKit.Example));
+
+        // 場景裡原有的人工管線不納入（佈線也沒把它們當障礙）：報告只會有這條管線的檢查
+        var s15 = LoadScene("s15_manual_pipes");
+        Assert.NotEmpty(s15.Pipes);
+        var line = LoadScene("s02_open_one_bend").Lines[0];
+        var mixed = LoadScene("s02_open_one_bend") with { Pipes = s15.Pipes };
+        var r = Route(mixed).WithRuleReport(mixed, line, PipingRouter.Tests.Rules.RuleTestKit.Example);
+        Assert.All(r.RuleReport!.Results, x => Assert.Equal("L-001", x.ObjectIds[0]));
     }
 
     // ------------------------------------------------------------ 讀入錯誤

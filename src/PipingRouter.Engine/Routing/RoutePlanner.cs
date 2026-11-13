@@ -88,6 +88,19 @@ public sealed class RoutePlanner
         return evaluation;
     }
 
+    /// <summary>
+    /// 對整個計畫做規則檢查並掛在評估結果上：所有成功的管線一起檢查（含管對管淨距與干涉）。
+    /// 失敗的管線沒有折線，不納入。管線順序依場景順序，所以報告的順序確定。
+    /// </summary>
+    public PlanEvaluation AttachRuleReport(PlanEvaluation evaluation)
+    {
+        var pipes = new List<PipeDef>();
+        for (int i = 0; i < _scene.Lines.Count; i++)
+            if (evaluation.Results[i].Success)
+                pipes.Add(RouteResultExtensions.ToPipe(_scene.Lines[i], evaluation.Results[i]));
+        return evaluation with { RuleReport = RuleChecker.Check(_scene, _rules, pipes) };
+    }
+
     private RouteResult RouteOne(LineRequest line, List<(RouteResult Result, double Radius)> routed)
     {
         double radius = line.CollisionRadiusMm;

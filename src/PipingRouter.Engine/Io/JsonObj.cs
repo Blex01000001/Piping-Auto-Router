@@ -213,6 +213,26 @@ internal sealed class JsonObj
         return list;
     }
 
+    /// <summary>整數陣列（必要欄位）。</summary>
+    public List<int> VecArrayOfInts(string name)
+    {
+        var list = new List<int>();
+        if (!TryGet(name, true, out var el)) return list;
+        if (el.ValueKind != JsonValueKind.Array)
+        {
+            _issues.Error("WrongType", P(name), "應為陣列");
+            return list;
+        }
+        int i = 0;
+        foreach (var item in el.EnumerateArray())
+        {
+            if (item.ValueKind == JsonValueKind.Number && item.TryGetInt32(out int v)) list.Add(v);
+            else _issues.Error("WrongType", $"{P(name)}[{i}]", "應為整數");
+            i++;
+        }
+        return list;
+    }
+
     public List<string> StrArray(string name)
     {
         var list = new List<string>();
