@@ -33,6 +33,31 @@ public class RoutingConfigJsonTests
     }
 
     [Fact]
+    public void Planning_ExampleHasAPenalty_AndRoundTrips()
+    {
+        var c = RoutingConfigJson.Parse(ExampleText).ValueOrThrow();
+        Assert.Equal(1_000_000, c.Planning.FailurePenalty);
+        var back = RoutingConfigJson.Parse(RoutingConfigJson.Serialize(c)).ValueOrThrow();
+        Assert.Equal(c.Planning, back.Planning);
+        var custom = RoutingConfigJson.Parse(Mutate(ExampleText, "\"failurePenalty\": 1000000", "\"failurePenalty\": 2500.5")).ValueOrThrow();
+        Assert.Equal(2500.5, RoutingConfigJson.Parse(RoutingConfigJson.Serialize(custom)).ValueOrThrow().Planning.FailurePenalty);
+    }
+
+    [Fact]
+    public void Planning_IsOptional_WithADefault()
+    {
+        const string json = """{ "schemaVersion": 1, "voxelSizeMm": 50, "weights": { "length": 1, "bend": 10 } }""";
+        Assert.Equal(PlanningSettings.Default, RoutingConfigJson.Parse(json).ValueOrThrow().Planning);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("-5")]
+    [InlineData("2e12")]
+    public void Planning_PenaltyMustBePositiveAndBounded(string v) =>
+        HasError(RoutingConfigJson.Parse(Mutate(ExampleText, "\"failurePenalty\": 1000000", $"\"failurePenalty\": {v}")), "OutOfRange", "planning.failurePenalty");
+
+    [Fact]
     public void LargeSeed_RoundTrips()
     {
         var c = RoutingConfigJson.Parse(Mutate(ExampleText, "\"seed\": 0", "\"seed\": 9007199254740993")).ValueOrThrow();

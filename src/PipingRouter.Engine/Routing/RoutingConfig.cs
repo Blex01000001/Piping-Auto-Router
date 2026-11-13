@@ -11,6 +11,15 @@ public sealed record RoutingWeights(double Length, double Bend, double ZonePenal
 
 public sealed record SearchSettings(long MaxExpandedNodes, long Seed);
 
+/// <summary>
+/// 多條管線整體評估的設定。FailurePenalty 是每條佈線失敗的管線加上的固定懲罰（成本單位，與長度權重同一個尺度），
+/// 要大到讓「少失敗」永遠優先於「少成本」；範例值僅供示範。
+/// </summary>
+public sealed record PlanningSettings(double FailurePenalty)
+{
+    public static PlanningSettings Default { get; } = new(1_000_000);
+}
+
 public sealed record RoutingConfig(
     int SchemaVersion,
     double VoxelSizeMm,
@@ -20,4 +29,6 @@ public sealed record RoutingConfig(
     bool DiagnoseOnFailure)
 {
     public const int CurrentSchemaVersion = 1;
+
+    public PlanningSettings Planning { get; init; } = PlanningSettings.Default;
 }

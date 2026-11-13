@@ -139,7 +139,7 @@ public static class Voxelizer
     };
 
     /// <summary>世界座標區間 [lo,hi] 涵蓋的格子索引範圍（夾在格子內）；與格子完全不相交回傳 false。</summary>
-    private static bool Range(double origin, int n, double cell, double lo, double hi, out int i0, out int i1)
+    internal static bool Range(double origin, int n, double cell, double lo, double hi, out int i0, out int i1)
     {
         i0 = i1 = 0;
         double f0 = Math.Floor((lo - origin) / cell);

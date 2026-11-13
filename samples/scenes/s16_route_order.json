@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 1,
+  "name": "s16 一面墙兩個只容一根管的縫：兩條管線誰先佈會影響整體結果（假資料）",
+  "isSynthetic": true,
+  "units": "mm",
+  "floorZ": 950,
+  "bounds": {
+    "min": [0, 0, 950],
+    "max": [8000, 4000, 1050]
+  },
+  "obstacles": [
+    {
+      "id": "WALL-1",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [3900, 0, 950], "max": [4100, 1850, 1050] }
+    },
+    {
+      "id": "WALL-2",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [3900, 2250, 950], "max": [4100, 3450, 1050] }
+    },
+    {
+      "id": "WALL-3",
+      "kind": "wall",
+      "shape": { "type": "box", "min": [3900, 3850, 950], "max": [4100, 4000, 1050] }
+    }
+  ],
+  "serviceZones": [],
+  "lines": [
+    {
+      "id": "L-A",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": { "position": [500, 2750, 1000], "direction": "+X" },
+      "end": { "position": [7500, 2750, 1000], "direction": "-X" },
+      "componentSequence": []
+    },
+    {
+      "id": "L-B",
+      "outerDiameterMm": 100,
+      "insulationThicknessMm": 0,
+      "start": { "position": [500, 2150, 1000], "direction": "+X" },
+      "end": { "position": [7500, 2150, 1000], "direction": "-X" },
+      "componentSequence": []
+    }
+  ],
+  "pipes": []
+}

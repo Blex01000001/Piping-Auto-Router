@@ -69,6 +69,15 @@ ArchitectureTests 會檢查這些約束。
   有意改變輸出格式或演算法結果時，用 `UPDATE_GOLDEN=1 dotnet test --filter Golden_` 重新產生，**務必檢視 git diff 再提交**。
 - 備選方案（LineRouter.RouteAlternatives）：換種子（config 種子 + 1、+ 2…）重跑並依路徑去重；每條成本相同、都合法；
   路徑只有一種時會少於要求的條數。
+- 多條管線（Routing/RoutePlanner，預留給 MCTS／遺傳演算法／模擬退火）：依「佈線順序」逐條佈線；每條管線從乾淨的基底格子
+  Clone 出來，蓋上前面「成功」的管線（VoxelGrid.StampCapsule，邊距 = 兩管半徑和 + 管間最小淨距；旗標 OtherPipe），
+  再交給 IRouter。PlanEvaluation.Score = 成功管線成本總和 + 失敗條數 × 失敗懲罰（設定檔 planning.failurePenalty，範例值 1,000,000，
+  ×1000 定點）——懲罰要大到「少失敗」永遠優先於「少成本」，太小時失敗一條反而比繞路便宜（有測試示範）。
+  順序由 IRouteOrderStrategy.Choose(lineCount, evaluate) 決定（內建：GivenOrder／FixedOrder／ExhaustiveOrder；
+  新策略只要實作這個介面，Router 與 Planner 都不用改）。Evaluate 對同一順序有快取；Results[i] 對應 scene.Lines[i]。
+  Planner 不是執行緒安全的。第一條佈線的管線不受影響，後面的管線成本只會不減（只多了限制）。
+- 搜尋狀態編碼（Routing/StateLayout）：(格子, 方向, run, 元件序列索引 comp)；第一階段 comp 恆為 0、ComponentCount = 1。
+  方向表（Routing/DirectionSet）：目前只有 Axis6；45 度日後新增方向集合並擴充 BendClass 即可，搜尋主體不用改。
 - 形狀重疊（Geometry/ShapeOverlap）的語意：兩形狀各內縮 eps 後做閉集合相交，貼合不算重疊。
 
 ## 驗證（改完必跑，通過才算完成）
@@ -80,5 +89,5 @@ ArchitectureTests 會檢查這些約束。
 雲端容器需先 `apt-get update && apt-get install -y dotnet-sdk-8.0`（容器回收後要重裝）。
 
 ## 範圍
-目前為第一階段（進行到第 9 步：軸向 A* 含彎頭成本、最小直管長度、失敗診斷、確定性與結果 JSON，尚未含元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
+目前為第一階段（進行到第 10 步：軸向 A* 含彎頭成本、最小直管長度、失敗診斷、確定性與結果 JSON、多條管線順序評估介面，尚未含元件序列）：Engine + Tests。Dashboard、元件序列、多條管線整體搜尋是後續階段，
 架構已預留位置，但尚未實作。

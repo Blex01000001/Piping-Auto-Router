@@ -26,12 +26,7 @@ namespace PipingRouter.Engine.Routing;
 /// </summary>
 public sealed class AStarRouter : IRouter
 {
-    private const int DirCount = 6;
     private const long MaxStatesForArrays = 16_000_000;
-
-    private static readonly int[] Dx = { 1, -1, 0, 0, 0, 0 };
-    private static readonly int[] Dy = { 0, 0, 1, -1, 0, 0 };
-    private static readonly int[] Dz = { 0, 0, 0, 0, 1, -1 };
 
     private readonly record struct OpenItem(int State, long G);
 
@@ -92,7 +87,9 @@ public sealed class AStarRouter : IRouter
         int arriveDir = (int)line.End.Direction.Opposite();       // 抵達終點時行進的方向
 
         // ---- A* ----
-        long stateCount = grid.CellCount * DirCount * minRun;
+        var dset = DirectionSet.For(config.Directions);
+        var layout = new StateLayout(dset.Count, minRun);        // 元件序列索引預留（第一階段恆為 0）
+        long stateCount = grid.CellCount * layout.StatesPerCell;
         if (stateCount > int.MaxValue)
             return Fail("GridTooLarge",
                 $"搜尋狀態數 {stateCount}（格子 × 6 方向 × 最小直管 {minRun} 格）過多；請加大格子或縮小場景。", snap);
@@ -100,7 +97,7 @@ public sealed class AStarRouter : IRouter
             ? new ArrayStateStore((int)stateCount)
             : new DictionaryStateStore();
 
-        int startState = Encode(grid.LinearIndex(startCell), startDir, minRun, minRun);
+        int startState = layout.Encode(grid.LinearIndex(startCell), startDir, minRun);
         int goalLinear = grid.LinearIndex(goalCell);
         var open = new PriorityQueue<OpenItem, OpenKey>();
         long seq = 0;
@@ -131,7 +128,7 @@ public sealed class AStarRouter : IRouter
             store.Close(s);
             expanded++;
 
-            Decode(s, minRun, out int linear, out int d, out int run);
+            layout.Decode(s, out int linear, out int d, out int run, out _);
             int cx = linear % grid.Nx;
             int cy = linear / grid.Nx % grid.Ny;
             int cz = linear / (grid.Nx * grid.Ny);
@@ -145,22 +142,22 @@ public sealed class AStarRouter : IRouter
                 break;
             }
 
-            for (int nd = 0; nd < DirCount; nd++)
+            for (int nd = 0; nd < dset.Count; nd++)
             {
                 if (s == startState && nd != startDir) continue;     // 起點第一步必須沿接口方向
-                if (nd == (d ^ 1)) continue;                          // 不可 180 度回頭
+                if (nd == dset.Opposite(d)) continue;                 // 不可 180 度回頭
                 if (nd != d && run < minRun) continue;                // 兩彎頭之間的直管還不夠長，不能轉彎
 
-                var next = new CellIndex(cx + Dx[nd], cy + Dy[nd], cz + Dz[nd]);
+                var next = new CellIndex(cx + dset.StepX(nd), cy + dset.StepY(nd), cz + dset.StepZ(nd));
                 if (grid.IsBlocked(next)) continue;
                 if (next == startCell) continue;                       // 起點格是端點專用
                 if (next == goalCell && nd != arriveDir && !anyArrival) continue;   // 終點格只能以抵達方向進入
 
                 int nrun = nd == d ? Math.Min(run + 1, minRun) : 1;
-                int ns = Encode(grid.LinearIndex(next), nd, nrun, minRun);
+                int ns = layout.Encode(grid.LinearIndex(next), nd, nrun);
 
                 long cost = step;
-                if (nd != d) cost += bend;
+                cost += bend * dset.BendClass(d, nd);
                 if (grid.IsPenalized(next)) cost += zone;
 
                 long ng = item.G + cost;
@@ -200,7 +197,7 @@ public sealed class AStarRouter : IRouter
         var dirs = new List<int>(states.Count);
         foreach (int s in states)
         {
-            Decode(s, minRun, out int linear, out int dir, out _);
+            layout.Decode(s, out int linear, out int dir, out _, out _);
             cells.Add(new CellIndex(linear % grid.Nx, linear / grid.Nx % grid.Ny, linear / (grid.Nx * grid.Ny)));
             dirs.Add(dir);
         }
@@ -258,16 +255,6 @@ public sealed class AStarRouter : IRouter
     internal static RelaxationOutcome Outcome(string id, string name, RouteResult r) =>
         new(id, name, r.Success, r.Metrics?.BendCount, r.Metrics?.LengthMm, r.Search.Expanded, r.Failure?.Code);
 
-    private static int Encode(int linear, int dir, int run, int minRun) => (linear * DirCount + dir) * minRun + (run - 1);
-
-    private static void Decode(int state, int minRun, out int linear, out int dir, out int run)
-    {
-        run = state % minRun + 1;
-        int rest = state / minRun;
-        dir = rest % DirCount;
-        linear = rest / DirCount;
-    }
-
     private static long Scaled(double v)
     {
         double x = Math.Round(v * CostUnits.Scale);
@@ -283,6 +270,7 @@ public sealed class AStarRouter : IRouter
         if ((f & CellFlags.Obstacle) != 0) parts.Add("障礙物及其淨距範圍");
         if ((f & CellFlags.Zone) != 0) parts.Add("維修／操作區");
         if ((f & CellFlags.OutsideBounds) != 0) parts.Add("場景範圍外");
+        if ((f & CellFlags.OtherPipe) != 0) parts.Add("其他管線及其管間淨距範圍");
         return parts.Count == 0 ? "未知" : string.Join("、", parts);
     }
 

@@ -11,5 +11,8 @@
     "maxExpandedNodes": 5000000,
     "seed": 0
   },
+  "planning": {
+    "failurePenalty": 1000000
+  },
   "diagnoseOnFailure": true
 }

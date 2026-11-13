@@ -51,8 +51,17 @@ public static class RoutingConfigJson
             search = new SearchSettings(max, seed);
         }
 
+        var planning = PlanningSettings.Default;
+        var pl = root.Obj("planning", false);
+        if (pl != null)
+        {
+            double penalty = pl.OptNum("failurePenalty", PlanningSettings.Default.FailurePenalty);
+            if (!(penalty > 0) || penalty > 1e12) pl.Error("failurePenalty", "OutOfRange", "failurePenalty 必須 > 0 且 ≤ 1e12");
+            planning = new PlanningSettings(penalty);
+        }
+
         bool diagnose = root.OptBool("diagnoseOnFailure", true);
-        return new RoutingConfig(version, voxel, weights, directions, search, diagnose);
+        return new RoutingConfig(version, voxel, weights, directions, search, diagnose) { Planning = planning };
     }
 
     public static string Serialize(RoutingConfig c)
@@ -68,6 +77,7 @@ public static class RoutingConfigJson
             .Add("search", new JObj()
                 .Add("maxExpandedNodes", c.Search.MaxExpandedNodes)
                 .Add("seed", c.Search.Seed))
+            .Add("planning", new JObj().Add("failurePenalty", c.Planning.FailurePenalty))
             .Add("diagnoseOnFailure", c.DiagnoseOnFailure);
         return JsonOut.Write(root);
     }

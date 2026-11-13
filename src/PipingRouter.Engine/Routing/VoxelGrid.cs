@@ -7,7 +7,7 @@ public readonly record struct CellIndex(int X, int Y, int Z)
     public override string ToString() => $"({X},{Y},{Z})";
 }
 
-/// <summary>格子被標記的原因。IsBlocked = 有 Obstacle／Zone／OutsideBounds 其一；Penalized 只用於成本。</summary>
+/// <summary>格子被標記的原因。IsBlocked = 有 Obstacle／Zone／OutsideBounds／OtherPipe 其一；Penalized 只用於成本。</summary>
 [Flags]
 public enum CellFlags : byte
 {
@@ -16,6 +16,9 @@ public enum CellFlags : byte
     Zone = 2,
     OutsideBounds = 4,
     Penalized = 8,
+
+    /// <summary>已佈好的其他管線及其管間淨距範圍（多條管線依序佈線時由 <see cref="VoxelGrid.StampCapsule"/> 標記）。</summary>
+    OtherPipe = 16,
 }
 
 /// <summary>
@@ -25,7 +28,7 @@ public enum CellFlags : byte
 /// </summary>
 public sealed class VoxelGrid
 {
-    private const CellFlags BlockedMask = CellFlags.Obstacle | CellFlags.Zone | CellFlags.OutsideBounds;
+    private const CellFlags BlockedMask = CellFlags.Obstacle | CellFlags.Zone | CellFlags.OutsideBounds | CellFlags.OtherPipe;
 
     private readonly byte[] _flags;
 
@@ -46,6 +49,49 @@ public sealed class VoxelGrid
         Ny = ny;
         Nz = nz;
         _flags = new byte[(long)nx * ny * nz];
+    }
+
+    private VoxelGrid(VoxelGrid other)
+    {
+        SceneBounds = other.SceneBounds;
+        Origin = other.Origin;
+        CellSize = other.CellSize;
+        Nx = other.Nx;
+        Ny = other.Ny;
+        Nz = other.Nz;
+        _flags = (byte[])other._flags.Clone();
+    }
+
+    /// <summary>複製一份（旗標獨立）。多條管線評估一個佈線順序時，每條管線從乾淨的基底格子複製後再蓋上已佈好的管線。</summary>
+    public VoxelGrid Clone() => new(this);
+
+    /// <summary>
+    /// 把一段已佈好的管線標成「其他管線」：格子方塊到線段的精確距離 &lt; margin 的格子都擋住。
+    /// margin = 已佈管線的半徑 + 這條管線的半徑 + 管間最小淨距；道理與障礙物相同——
+    /// 新管線的中心線只走自由格，所以離已佈管線的中心線 ≥ margin，膠囊體間隙 ≥ 管間淨距。
+    /// 回傳這次新標記的格子數。margin ≤ 0 不做事。
+    /// </summary>
+    public int StampCapsule(Segment segment, double margin)
+    {
+        if (!(margin > 0) || !double.IsFinite(margin)) return 0;
+        var reach = new Aabb(Vec3.Min(segment.A, segment.B), Vec3.Max(segment.A, segment.B)).Inflate(margin);
+        if (!Voxelizer.Range(Origin.X, Nx, CellSize, reach.Min.X, reach.Max.X, out int x0, out int x1) ||
+            !Voxelizer.Range(Origin.Y, Ny, CellSize, reach.Min.Y, reach.Max.Y, out int y0, out int y1) ||
+            !Voxelizer.Range(Origin.Z, Nz, CellSize, reach.Min.Z, reach.Max.Z, out int z0, out int z1))
+            return 0;
+
+        int added = 0;
+        for (int z = z0; z <= z1; z++)
+            for (int y = y0; y <= y1; y++)
+                for (int x = x0; x <= x1; x++)
+                {
+                    var c = new CellIndex(x, y, z);
+                    if (SegmentAabb.Distance(segment, CellBox(c)) >= margin) continue;
+                    int i = LinearIndex(c);
+                    if (((CellFlags)_flags[i] & CellFlags.OtherPipe) == 0) added++;
+                    _flags[i] |= (byte)CellFlags.OtherPipe;
+                }
+        return added;
     }
 
     public bool InRange(CellIndex c) =>
