@@ -190,7 +190,7 @@ Dashboard 與 3D 檢視器（Three.js）、MCTS／遺傳演算法／模擬退火
 - 習慣先看規劃再動手：較大的工作先寫規劃與需要確認的設計問題，使用者同意（常回「照你的建議」）後才實作；設計問題要給出建議選項。
 
 ## Git 規則
-- 在 session 指定的開發分支上開發（目前是 `claude/magical-lamport-1nahxu`）。它的 PR 合併後，新工作先從最新 `main` 重開。（遠端目前還沒有 `main`，見 `docs/TODO.md` 待辦 1。）
+- 在 session 指定的開發分支上開發（目前是 `claude/magical-lamport-1nahxu`）。它的 PR 合併後，新工作先從最新 `main` 重開。
 - 使用者說「合併到 main」時：用 GitHub MCP 工具建立 PR 再 merge（`expectedHeadSha` 用完整 40 字元 SHA）。
 - 每完成一個獨立的修改就 commit。commit 訊息第一行簡述改了什麼，需要時空一行補充原因。
 - 需要了解過去的修改時，用 `git log` 查詢。
